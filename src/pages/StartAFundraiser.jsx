@@ -1,21 +1,26 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useFundraisers } from "../context/FundraiserContext";
+import axios from 'axios';  // For making API requests
 
-export default function StartFundraiser() {
+export default function StartFundraiser({ LoggedInUser }) {
   const navigate = useNavigate();
-  const { addFundraiser } = useFundraisers();
-
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    state: "",
+    state: "",  // Ensure all inputs are controlled
     city: "",
     pincode: "",
     purpose: "",
-    photo: null,
+    photo: null,  // File inputs can be null
     overview: "",
     video: null,
     companyName: "",
+    promotion: "",  // Added promotion option
+    promoVideo: null,
+    promoPoster: null,
+    moneyToRaise: "",
+    fundingType: "",
+    profitPercentage: "",
+    daysToRaise: "",
   });
 
   const handleNext = () => {
@@ -31,26 +36,65 @@ export default function StartFundraiser() {
     if (files) {
       setFormData((prev) => ({
         ...prev,
-        [name]: files[0],
+        [name]: files[0] || null,
       }));
     } else {
       setFormData((prev) => ({
         ...prev,
-        [name]: value,
+        [name]: value || "",  // Ensure it's not undefined
       }));
     }
   };
 
-  const handleSubmit = () => {
-    addFundraiser(formData);
-    alert("Fundraiser submitted successfully!");
-    navigate("/dashboard"); // redirect to dashboard
+  const handleSubmit = async () => {
+    if (!LoggedInUser) {
+      alert("You need to be logged in to submit a fundraiser.");
+      navigate("/login");
+      return;
+    }
+
+    // Create a FormData instance to send the data including files
+    const form = new FormData();
+    form.append("companyName", formData.companyName);
+    form.append("overview", formData.overview);
+    form.append("purpose", formData.purpose);
+    form.append("state", formData.state);
+    form.append("city", formData.city);
+    form.append("pincode", formData.pincode);
+    form.append("photo", formData.photo);
+    form.append("video", formData.video);
+    form.append("promoVideo", formData.promoVideo);
+    form.append("promoPoster", formData.promoPoster);
+    form.append("promotion", formData.promotion);
+    form.append("moneyToRaise", formData.moneyToRaise);
+    form.append("fundingType", formData.fundingType);
+    form.append("profitPercentage", formData.profitPercentage);
+    form.append("daysToRaise", formData.daysToRaise);
+    form.append("userId", LoggedInUser._id); // Pass the logged-in user's ID
+
+    const token = localStorage.getItem("token");
+
+    try {
+      // Make the API call to submit the fundraiser
+      const response = await axios.post("http://localhost:5000/api/fundraiser/submit", form, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      alert("Fundraiser submitted successfully!");
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Error submitting fundraiser:", error);
+      alert("Error submitting fundraiser.");
+    }
   };
 
   return (
     <main className="flex min-h-screen bg-white">
       {/* Sidebar with Clickable Steps */}
-      <div className="w-1/4 bg-gray-50 p-8 space-y-6">
+      <div className="w-1/4 bg-gray-50 p-8 space-y-6 overflow-y-auto">
         <h2 className="text-2xl font-bold text-gray-800">Steps</h2>
         {[1, 2, 3, 4, 5, 6, 7].map((n) => (
           <div
@@ -59,13 +103,12 @@ export default function StartFundraiser() {
             ${n === step ? "bg-yellow-200 text-gray-800" : "bg-gray-200 text-gray-500"}`}
             onClick={() => setStep(n)}
           >
-            {n === 1 && "Location Details"}
-            {n === 2 && "Purpose"}
-            {n === 3 && "Company Photo"}
-            {n === 4 && "Company Overview"}
-            {n === 5 && "Company Structural Video"}
-            {n === 6 && "Company Name"}
-            {n === 7 && "Review & Submit"}
+            {n === 1 && "Project Details"}
+            {n === 2 && "Funding"}
+            {n === 3 && "Legal Documents"}
+            {n === 4 && "Bank Details"}
+            {n === 5 && "Promotion/Ad"}
+            {n === 6 && "Review & Submit"}
           </div>
         ))}
       </div>
@@ -76,164 +119,409 @@ export default function StartFundraiser() {
 
         {/* Step Content */}
         <div className="bg-white p-8 rounded-lg shadow-lg">
-          {/* Step 1: Location Details */}
+          {/* Step 1: Project Details */}
           {step === 1 && (
             <div>
-              <h2 className="text-2xl font-semibold text-gray-800 mb-4">Location Details</h2>
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">Project Details</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                In this step, you'll provide essential details about your project like title, overview, category, and location.
+              </p>
               <div className="space-y-6">
                 <div>
-                  <label className="block text-gray-600 mb-2">State</label>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Project Title</h3>
+                  <input
+                    type="text"
+                    name="companyName"
+                    value={formData.companyName || ""}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out"
+                    placeholder="Enter your project title"
+                  />
+                  <p className="text-sm text-gray-600 mt-2">Enter the name of your project or campaign.</p>
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Project Overview</h3>
+                  <textarea
+                    name="overview"
+                    rows={5}
+                    value={formData.overview || ""}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out"
+                    placeholder="Describe your project..."
+                  />
+                  <p className="text-sm text-gray-600 mt-2">Provide a brief overview of what your project is about and its goals.</p>
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Project Category</h3>
+                  <select
+                    name="purpose"
+                    value={formData.purpose}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out"
+                  >
+                    <option value="">Select Category</option>
+                    <option value="Business">Business</option>
+                    <option value="Startup">Startup</option>
+                    <option value="Growth">Company Growth</option>
+                  </select>
+                  <p className="text-sm text-gray-600 mt-2">Choose the most suitable category for your project.</p>
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Project Location</h3>
                   <input
                     type="text"
                     name="state"
                     value={formData.state}
                     onChange={handleChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out"
+                    placeholder="State"
                   />
-                </div>
-                <div>
-                  <label className="block text-gray-600 mb-2">City</label>
                   <input
                     type="text"
                     name="city"
                     value={formData.city}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out mt-4"
+                    placeholder="City"
                   />
-                </div>
-                <div>
-                  <label className="block text-gray-600 mb-2">Pin Code</label>
                   <input
                     type="text"
                     name="pincode"
                     value={formData.pincode}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out mt-4"
+                    placeholder="Pincode"
                   />
+                  <p className="text-sm text-gray-600 mt-2">Enter the location where your project is based.</p>
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Project Image</h3>
+                  <input
+                    type="file"
+                    name="photo"
+                    onChange={handleChange}
+                    className="file:border file:border-gray-300 file:px-4 file:py-2 file:rounded-lg file:bg-blue-600 file:text-white file:hover:bg-blue-700 file:cursor-pointer"
+                  />
+                  <p className="text-sm text-gray-600 mt-2">Upload an image to represent your project.</p>
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Project Overview Video</h3>
+                  <input
+                    type="file"
+                    name="video"
+                    accept="video/*"
+                    onChange={handleChange}
+                    className="file:border file:border-gray-300 file:px-4 file:py-2 file:rounded-lg file:bg-green-600 file:text-white file:hover:bg-green-700 file:cursor-pointer"
+                  />
+                  <p className="text-sm text-gray-600 mt-2">Upload a video overview of your project (optional).</p>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Step 2: Purpose */}
+          {/* Step 2: Funding */}
           {step === 2 && (
             <div>
-              <h2 className="text-2xl font-semibold text-gray-800 mb-4">Purpose</h2>
-              <div className="space-y-2">
-                {["Business", "Startup", "Company Growth"].map((purpose) => (
-                  <label key={purpose} className="block">
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">Funding</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Set the goal for the funds to raise, select the funding type, and determine how much profit (if any) will be returned.
+              </p>
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Money to Raise</h3>
+                  <input
+                    type="text"
+                    name="moneyToRaise"
+                    value={formData.moneyToRaise}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out"
+                    placeholder="Enter the amount to raise"
+                  />
+                  <p className="text-sm text-gray-600 mt-2">Specify the target amount you wish to raise for your project.</p>
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Days to Raise Funds</h3>
+                  <input
+                    type="text"
+                    name="daysToRaise"
+                    value={formData.daysToRaise}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out"
+                    placeholder="Enter the days to raise funds"
+                  />
+                  <p className="text-sm text-gray-600 mt-2">Enter the number of days you plan to raise funds.</p>
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Funding Type</h3>
+                  <select
+                    name="fundingType"
+                    value={formData.fundingType}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out"
+                  >
+                    <option value="">Select Type</option>
+                    <option value="profit">Profit Return</option>
+                    <option value="non-profit">Non-Profit Return</option>
+                  </select>
+                  <p className="text-sm text-gray-600 mt-2">Select the type of funding for your project.</p>
+                </div>
+                {formData.fundingType === "profit" && (
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-800 mb-2">Profit Percentage</h3>
                     <input
-                      type="radio"
-                      name="purpose"
-                      value={purpose}
-                      checked={formData.purpose === purpose}
+                      type="text"
+                      name="profitPercentage"
+                      value={formData.profitPercentage}
                       onChange={handleChange}
-                      className="mr-2"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out"
+                      placeholder="Enter profit percentage"
                     />
-                    {purpose}
-                  </label>
-                ))}
+                    <p className="text-sm text-gray-600 mt-2">Enter the percentage of profit that backers will receive.</p>
+                  </div>
+                )}
               </div>
             </div>
           )}
 
-          {/* Step 3: Company Photo */}
+          {/* Step 3: Legal Documents */}
           {step === 3 && (
             <div>
-              <h2 className="text-2xl font-semibold text-gray-800 mb-4">Company Photo</h2>
-              <input
-                type="file"
-                name="photo"
-                accept="image/*"
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out"
-              />
-              {formData.photo && (
-                <img
-                  src={URL.createObjectURL(formData.photo)}
-                  alt="Preview"
-                  className="mt-4 rounded-lg shadow-lg w-48"
-                />
-              )}
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">Legal Documents</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Upload your documents and verify your identity to make sure everything is legal and verified.
+              </p>
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Introduce Yourself</h3>
+                  <textarea
+                    name="introduction"
+                    rows={4}
+                    value={formData.introduction}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out"
+                    placeholder="Introduce yourself"
+                  />
+                  <p className="text-sm text-gray-600 mt-2">Provide a brief introduction of yourself to build trust with your backers.</p>
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">License Picture</h3>
+                  <input
+                    type="file"
+                    name="license"
+                    onChange={handleChange}
+                    className="file:border file:border-gray-300 file:px-4 file:py-2 file:rounded-lg file:bg-blue-600 file:text-white file:hover:bg-blue-700 file:cursor-pointer"
+                  />
+                  <p className="text-sm text-gray-600 mt-2">Upload a copy of your business license for verification.</p>
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">KYC Verification</h3>
+                  <input
+                    type="file"
+                    name="kyc"
+                    onChange={handleChange}
+                    className="file:border file:border-gray-300 file:px-4 file:py-2 file:rounded-lg file:bg-green-600 file:text-white file:hover:bg-green-700 file:cursor-pointer"
+                  />
+                  <p className="text-sm text-gray-600 mt-2">Upload your KYC document for verification.</p>
+                </div>
+              </div>
             </div>
           )}
 
-          {/* Step 4: Overview Description */}
+          {/* Step 4: Bank Details */}
           {step === 4 && (
             <div>
-              <h2 className="text-2xl font-semibold text-gray-800 mb-4">Company Overview</h2>
-              <textarea
-                name="overview"
-                rows={5}
-                value={formData.overview}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out"
-                placeholder="Describe your company..."
-              />
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">Bank Details</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Enter your bank details for transferring funds if your project is successful.
+              </p>
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Bank Name</h3>
+                  <input
+                    type="text"
+                    name="bankName"
+                    value={formData.bankName}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out"
+                    placeholder="Enter bank name"
+                  />
+                  <p className="text-sm text-gray-600 mt-2">Enter the name of your bank.</p>
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Bank Branch</h3>
+                  <input
+                    type="text"
+                    name="bankBranch"
+                    value={formData.bankBranch}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out"
+                    placeholder="Enter bank branch"
+                  />
+                  <p className="text-sm text-gray-600 mt-2">Enter the branch of your bank.</p>
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Account Holder Name</h3>
+                  <input
+                    type="text"
+                    name="accountHolder"
+                    value={formData.accountHolder}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out"
+                    placeholder="Enter account holder name"
+                  />
+                  <p className="text-sm text-gray-600 mt-2">Enter the name of the account holder.</p>
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Account Number</h3>
+                  <input
+                    type="text"
+                    name="accountNumber"
+                    value={formData.accountNumber}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out"
+                    placeholder="Enter account number"
+                  />
+                  <p className="text-sm text-gray-600 mt-2">Provide your bank account number.</p>
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">IFSC Code</h3>
+                  <input
+                    type="text"
+                    name="ifscCode"
+                    value={formData.ifscCode}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out"
+                    placeholder="Enter IFSC code"
+                  />
+                  <p className="text-sm text-gray-600 mt-2">Enter your bank IFSC code.</p>
+                </div>
+              </div>
             </div>
           )}
 
-          {/* Step 5: Company Structural Video */}
+          {/* Step 5: Promotion/Ad */}
           {step === 5 && (
             <div>
-              <h2 className="text-2xl font-semibold text-gray-800 mb-4">Company Structural Video</h2>
-              <input
-                type="file"
-                name="video"
-                accept="video/*"
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out"
-              />
-              {formData.video && (
-                <video
-                  src={URL.createObjectURL(formData.video)}
-                  controls
-                  className="mt-4 rounded-lg shadow-lg w-full"
-                />
-              )}
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">Promotion/Ad</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                If you want to promote your campaign for more visibility, you can upload promotional content.
+              </p>
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Do you want to promote your campaign?</h3>
+                  <p className="text-sm text-gray-600 mb-2">Choose if you'd like to promote your campaign for extra visibility.</p>
+                  <div className="flex gap-4">
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="promotion"
+                        value="yes"
+                        onChange={handleChange}
+                        checked={formData.promotion === "yes"}
+                        className="mr-2"
+                      />
+                      Yes
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="promotion"
+                        value="no"
+                        onChange={handleChange}
+                        checked={formData.promotion === "no"}
+                        className="mr-2"
+                      />
+                      No
+                    </label>
+                  </div>
+                </div>
+
+                {formData.promotion === "yes" && (
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-800 mb-2">Upload Promotional Video</h3>
+                    <input
+                      type="file"
+                      name="promoVideo"
+                      onChange={handleChange}
+                      className="file:border file:border-gray-300 file:px-4 file:py-2 file:rounded-lg file:bg-blue-600 file:text-white file:hover:bg-blue-700 file:cursor-pointer"
+                    />
+                    {formData.promoVideo && <span className="text-sm">{formData.promoVideo.name}</span>}
+
+                    <h3 className="text-xl font-semibold text-gray-800 mb-2 mt-4">Upload Promotional Poster</h3>
+                    <div className="flex items-center gap-4">
+                      <input
+                        type="file"
+                        name="promoPoster"
+                        onChange={handleChange}
+                        className="file:border file:border-gray-300 file:px-4 file:py-2 file:rounded-lg file:bg-green-600 file:text-white file:hover:bg-green-700 file:cursor-pointer"
+                      />
+                      {formData.promoPoster && <span className="text-sm">{formData.promoPoster.name}</span>}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
-          {/* Step 6: Company Name */}
+          {/* Step 6: Review & Submit */}
           {step === 6 && (
             <div>
-              <h2 className="text-2xl font-semibold text-gray-800 mb-4">Company Name</h2>
-              <input
-                type="text"
-                name="companyName"
-                value={formData.companyName}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out"
-                placeholder="Enter Company Name"
-              />
-            </div>
-          )}
-
-          {/* Step 7: Review & Submit */}
-          {step === 7 && (
-            <div>
-              <h2 className="text-2xl font-semibold text-gray-800 mb-4">Review & Submit</h2>
-              <ul className="text-gray-700 space-y-2">
-                <li><strong>State:</strong> {formData.state}</li>
-                <li><strong>City:</strong> {formData.city}</li>
-                <li><strong>Pin Code:</strong> {formData.pincode}</li>
-                <li><strong>Purpose:</strong> {formData.purpose}</li>
-                <li><strong>Company Name:</strong> {formData.companyName}</li>
-                <li><strong>Overview:</strong> {formData.overview}</li>
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">Review & Submit</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Please review your information before submitting your fundraiser.
+              </p>
+              <ul className="space-y-4">
+                <li><strong>Project Title:</strong> {formData.companyName}</li>
+                <li><strong>Project Overview:</strong> {formData.overview}</li>
+                <li><strong>Project Location:</strong> {formData.state}, {formData.city}, {formData.pincode}</li>
+                <li><strong>Project Category:</strong> {formData.purpose}</li>
+                <li><strong>Funding Amount:</strong> ₹{formData.moneyToRaise}</li>
+                <li><strong>Funding Type:</strong> {formData.fundingType}</li>
+                {formData.fundingType === "profit" && (
+                  <li><strong>Profit Percentage:</strong> {formData.profitPercentage}%</li>
+                )}
+                <li><strong>Promotion:</strong> {formData.promotion}</li>
               </ul>
+
               {formData.photo && (
-                <img
-                  src={URL.createObjectURL(formData.photo)}
-                  alt="Company"
-                  className="mt-4 w-48 rounded shadow-lg"
-                />
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Project Image</h3>
+                  <img
+                    src={URL.createObjectURL(formData.photo)}
+                    alt="Project Image"
+                    className="w-48 rounded-lg shadow-lg"
+                  />
+                </div>
               )}
               {formData.video && (
-                <video
-                  src={URL.createObjectURL(formData.video)}
-                  controls
-                  className="mt-4 w-full rounded shadow-lg"
-                />
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Project Overview Video</h3>
+                  <video
+                    src={URL.createObjectURL(formData.video)}
+                    controls
+                    className="w-full rounded-lg shadow-lg"
+                  />
+                </div>
+              )}
+              {formData.promoVideo && (
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Promotional Video</h3>
+                  <video
+                    src={URL.createObjectURL(formData.promoVideo)}
+                    controls
+                    className="w-full rounded-lg shadow-lg"
+                  />
+                </div>
+              )}
+              {formData.promoPoster && (
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Promotional Poster</h3>
+                  <img
+                    src={URL.createObjectURL(formData.promoPoster)}
+                    alt="Promo Poster"
+                    className="w-48 rounded-lg shadow-lg"
+                  />
+                </div>
               )}
             </div>
           )}
@@ -250,7 +538,7 @@ export default function StartFundraiser() {
             </button>
           )}
 
-          {step < 7 ? (
+          {step < 6 ? (
             <button
               onClick={handleNext}
               className="bg-yellow-200 hover:bg-yellow-300 text-gray-800 py-2 px-6 rounded-lg transition-all duration-300"
