@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import Cookies from "js-cookie";
+import { loginUser } from "../api/user";
 
-export default function LoginPage({ setLoggedInUser }) {
+export default function LoginPage() {
   const navigate = useNavigate();
   const [username, setUsername] = useState(""); // State for username
   const [email, setEmail] = useState("");
@@ -10,47 +11,29 @@ export default function LoginPage({ setLoggedInUser }) {
   const [error, setError] = useState("");
   const [isNewUser, setIsNewUser] = useState(false); // State to toggle between login and registration
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      navigate("/login");
-    }
-  }, [navigate]);
-
   const handleLogin = async (e) => {
     e.preventDefault();
-
     if (email === "" || password === "") {
       setError("Please fill in both fields.");
       return;
     }
-
-    try {
-      const response = await axios.post("http://localhost:5000/api/auth/login", {
-        email,
-        password,
-      });
-
-      // Handle successful login
-      const { token, user } = response.data;
-
-      // Store user data and token in localStorage
-      Cookies.set("token", token, { expires: 7 }); // Expires in 7 days (optional)
-
-      // Update global state with the logged-in user
-
-      // Redirect user to their dashboard
-      navigate("/dashboard");
-    } catch (err) {
-      setError(err.response?.data?.message || "Login failed. Please try again.");
+    const userData = await loginUser(email, password);
+    console.log("userData", userData);
+    if (userData) {
+      Cookies.set("token", userData?.token, { expires: 7 });
+      localStorage.setItem("user", JSON.stringify(userData?.user));
+      navigate("/dashboard"); // Redirect to dashboard after successful login
+    } else {
+      setError("Login failed. Please check your credentials.");
     }
   };
-
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-[#A7C7E7] via-[#E3F1FF] to-[#F0F8FF]">
       <div className="bg-white shadow-2xl rounded-xl p-10 w-96 max-w-lg">
-        <h2 className="text-3xl font-bold text-center mb-6 text-[#333]">Login</h2>
+        <h2 className="text-3xl font-bold text-center mb-6 text-[#333]">
+          Login
+        </h2>
 
         {/* Error message */}
         {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
@@ -58,7 +41,12 @@ export default function LoginPage({ setLoggedInUser }) {
         {/* Login Form */}
         <form onSubmit={handleLogin}>
           <div className="mb-6">
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700">Username</label>
+            <label
+              htmlFor="username"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Username
+            </label>
             <input
               type="text"
               id="username"
@@ -72,7 +60,12 @@ export default function LoginPage({ setLoggedInUser }) {
           </div>
 
           <div className="mb-6">
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Email
+            </label>
             <input
               type="email"
               id="email"
@@ -86,7 +79,12 @@ export default function LoginPage({ setLoggedInUser }) {
           </div>
 
           <div className="mb-6">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Password
+            </label>
             <input
               type="password"
               id="password"
@@ -109,29 +107,11 @@ export default function LoginPage({ setLoggedInUser }) {
 
           {/* New User? Section */}
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              {isNewUser ? (
-                <>
-                  New to the platform?{" "}
-                  <Link
-                    to="/register"
-                    className="text-blue-600 hover:text-blue-700"
-                    onClick={() => setIsNewUser(false)}
-                  >
-                    Register here
-                  </Link>
-                </>
-              ) : (
-                <>
-                  Not a user yet?{" "}
-                  <button
-                    onClick={() => setIsNewUser(true)}
-                    className="text-blue-600 hover:text-blue-700"
-                  >
-                    Register here
-                  </button>
-                </>
-              )}
+            <p
+              onClick={() => navigate("/register")}
+              className="text-sm text-gray-600"
+            >
+              Register
             </p>
           </div>
         </form>

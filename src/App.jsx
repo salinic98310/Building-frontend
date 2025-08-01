@@ -25,8 +25,6 @@ import RegisterPage from "./pages/RegisterPage.jsx";
 // Context
 import { FundraiserProvider } from "./context/FundraiserContext.jsx";
 
-
-
 export default function App() {
   const [loggedInUser, setLoggedInUser] = useState(null);
 
@@ -42,7 +40,10 @@ export default function App() {
       <Router>
         <div className="font-sans text-gray-900">
           {/* Header visible on all routes */}
-          <Header loggedInUser={loggedInUser} setLoggedInUser={setLoggedInUser} />
+          <Header
+            loggedInUser={loggedInUser}
+            setLoggedInUser={setLoggedInUser}
+          />
 
           <Routes>
             {/* Home */}
@@ -61,10 +62,11 @@ export default function App() {
             />
 
             {/* Login and Register Pages */}
-            <Route path="/login" element={<LoginPage setLoggedInUser={setLoggedInUser} />} />
+            <Route
+              path="/login"
+              element={<LoginPage setLoggedInUser={setLoggedInUser} />}
+            />
             <Route path="/register" element={<RegisterPage />} />
-            
-            
 
             {/* Browse Investors */}
             <Route
@@ -95,10 +97,7 @@ export default function App() {
             <Route path="/start-fundraiser" element={<StartFundraiser />} />
 
             {/* Protected Routes for Regular Users */}
-            <Route
-              path="/dashboard"
-              element={<ProtectedRoute element={<Dashboard  />} />}
-            />
+            <Route path="/dashboard" element={<Dashboard />} />
           </Routes>
         </div>
       </Router>

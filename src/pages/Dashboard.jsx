@@ -1,43 +1,35 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { getDashboardData } from "../api/user";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")));
   const [fundraisers, setFundraisers] = useState([]);
   const [selectedCampaign, setSelectedCampaign] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [totalRaisedMoney, setTotalRaisedMoney] = useState(0);
   const navigate = useNavigate();
 
-  // Fetch the user data and their fundraisers
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      navigate("/login");
-    } else {
-      const userId = localStorage.getItem("userId");
-
-      if (!userId) {
-        console.error("User ID not found in local storage.");
-        return;
-      }
-
-      // Fetch fundraisers related to the logged-in user
-      axios
-        .get(`http://localhost:5000/api/fundraiser/${userId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-        .then((response) => {
-          setFundraisers(response.data);
-        })
-        .catch((error) => {
-          console.error("Error fetching fundraisers", error);
-        });
+  const fetchFundraisers = async () => {
+    try {
+      const data = await getDashboardData(user?.id);
+      console.log("data", data);
+      setFundraisers(data.data);
+      setTotalRaisedMoney(
+        data.data.reduce((total, fundraiser) => {
+          return total + fundraiser.moneyToRaise;
+        }, 0)
+      );
+    } catch (error) {
+      console.error("Error fetching fundraisers:", error);
     }
-  }, [navigate , userId]);
+  };
+
+  useEffect(() => {
+    fetchFundraisers();
+    console.log("first", fundraisers);
+  }, []);
 
   const handleViewDetails = (campaign) => {
     setSelectedCampaign(campaign);
@@ -67,7 +59,9 @@ export default function Dashboard() {
                 <a
                   href="#"
                   className={`flex items-center gap-4 py-3 px-4 rounded-lg hover:bg-[#343a40] hover:text-white transition-all duration-300 ${
-                    activeTab === key ? "bg-[#3c4b64] text-white" : "text-gray-400"
+                    activeTab === key
+                      ? "bg-[#3c4b64] text-white"
+                      : "text-gray-400"
                   }`}
                   onClick={() => setActiveTab(key)}
                 >
@@ -98,13 +92,15 @@ export default function Dashboard() {
       <div className="flex-1 p-8">
         {activeTab === "dashboard" && (
           <div className="bg-white p-6 rounded-lg shadow-md">
-            <h2 className="text-2xl font-semibold mb-4">Welcome to Your Dashboard</h2>
+            <h2 className="text-2xl font-semibold mb-4">
+              Welcome to Your Dashboard
+            </h2>
 
             {/* Dashboard Boxes */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
               <div className="p-6 bg-[#6f42c1] text-white rounded-lg shadow-lg">
                 <h3 className="font-semibold text-lg">Total Funds Raised</h3>
-                <p className="text-2xl">$10,500</p>
+                <p className="text-2xl">{totalRaisedMoney}</p>
               </div>
               <div className="p-6 bg-[#28a745] text-white rounded-lg shadow-lg">
                 <h3 className="font-semibold text-lg">Investments Made</h3>
@@ -112,7 +108,7 @@ export default function Dashboard() {
               </div>
               <div className="p-6 bg-[#ffc107] text-white rounded-lg shadow-lg">
                 <h3 className="font-semibold text-lg">Active Campaigns</h3>
-                <p className="text-xl">{fundraisers.length} Campaigns</p>
+                <p className="text-xl">{fundraisers?.length} Campaigns</p>
               </div>
               <div className="p-6 bg-[#17a2b8] text-white rounded-lg shadow-lg">
                 <h3 className="font-semibold text-lg">Total Returns</h3>
@@ -122,7 +118,9 @@ export default function Dashboard() {
 
             {/* Campaigns Grid */}
             <div>
-              <h3 className="text-xl font-semibold mb-4">My Fundraising Projects</h3>
+              <h3 className="text-xl font-semibold mb-4">
+                My Fundraising Projects
+              </h3>
               <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
                 {Array.isArray(fundraisers) && fundraisers.length > 0 ? (
                   fundraisers.map((fundraiser) => (
@@ -145,7 +143,8 @@ export default function Dashboard() {
                           {fundraiser.companyName}
                         </h4>
                         <p className="text-sm text-gray-700 mt-1">
-                          {fundraiser.shortDescription || "Help us reach our goal!"}
+                          {fundraiser.shortDescription ||
+                            "Help us reach our goal!"}
                         </p>
                         <div className="mt-4 mb-2">
                           <div className="h-2 bg-gray-200 rounded-full">
@@ -153,7 +152,9 @@ export default function Dashboard() {
                               className="h-2 bg-green-500 rounded-full"
                               style={{
                                 width: `${Math.min(
-                                  (fundraiser.raisedAmount / fundraiser.moneyToRaise) * 100,
+                                  (fundraiser.raisedAmount /
+                                    fundraiser.moneyToRaise) *
+                                    100,
                                   100
                                 )}%`,
                               }}
@@ -161,7 +162,7 @@ export default function Dashboard() {
                           </div>
                         </div>
                         <p className="text-sm font-semibold text-gray-900">
-                          ${fundraiser.raisedAmount.toLocaleString()} raised
+                          {/* ${fundraiser.raisedAmount.toLocaleString()} raised */}
                         </p>
                         <button
                           onClick={() => handleViewDetails(fundraiser)}
@@ -185,10 +186,18 @@ export default function Dashboard() {
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
             <div className="bg-white p-6 rounded-lg shadow-lg w-2/3 max-w-4xl">
               <h3 className="text-2xl font-bold mb-4">Campaign Details</h3>
-              <h4 className="text-xl font-semibold mb-2">{selectedCampaign.companyName}</h4>
-              <p><strong>Goal:</strong> ${selectedCampaign.moneyToRaise}</p>
-              <p><strong>Raised Amount:</strong> ${selectedCampaign.raisedAmount}</p>
-              <p><strong>Overview:</strong> {selectedCampaign.overview}</p>
+              <h4 className="text-xl font-semibold mb-2">
+                {selectedCampaign.companyName}
+              </h4>
+              <p>
+                <strong>Goal:</strong> ${selectedCampaign.moneyToRaise}
+              </p>
+              <p>
+                <strong>Raised Amount:</strong> ${selectedCampaign.raisedAmount}
+              </p>
+              <p>
+                <strong>Overview:</strong> {selectedCampaign.overview}
+              </p>
               <button
                 onClick={handleCloseModal}
                 className="bg-red-600 text-white py-2 px-4 rounded-lg mt-4 w-full"

@@ -1,20 +1,21 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from 'axios';  // For making API requests
+import { data, useNavigate } from "react-router-dom";
+import axios from "axios"; // For making API requests
+import { createFundraiser } from "../api/user";
 
 export default function StartFundraiser({ LoggedInUser }) {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    state: "",  // Ensure all inputs are controlled
+    state: "", // Ensure all inputs are controlled
     city: "",
     pincode: "",
     purpose: "",
-    photo: null,  // File inputs can be null
+    photo: null, // File inputs can be null
     overview: "",
     video: null,
     companyName: "",
-    promotion: "",  // Added promotion option
+    promotion: "", // Added promotion option
     promoVideo: null,
     promoPoster: null,
     moneyToRaise: "",
@@ -22,6 +23,39 @@ export default function StartFundraiser({ LoggedInUser }) {
     profitPercentage: "",
     daysToRaise: "",
   });
+
+  //   {
+  //   "companyName": "Clean Water Startup",
+  //   "overview": "Our project aims to provide affordable water filters to rural areas.",
+  //   "purpose": "Startup",   // Options: "Business", "Startup", "Growth"
+  //   "state": "Maharashtra",
+  //   "city": "Pune",
+  //   "pincode": "411045",
+  //   "photo": "<photo_file_data_or_url>",     // Usually sent as file, see note below
+  //   "video": "<video_file_data_or_url>",     // Optional, usually sent as file
+
+  //   "moneyToRaise": "500000",
+  //   "daysToRaise": "30",
+  //   "profitPercentage": "10",    // Only present if fundingType is "profit"
+
+  //   "introduction": "I am an entrepreneur with 10 years experience.",
+  //   "license": "<license_file_data_or_url>", // Usually sent as file
+  //   "kyc": "<kyc_file_data_or_url>",         // Usually sent as file
+
+  //   "bankName": "State Bank of India",
+  //   "bankBranch": "MG Road",
+  //   "accountHolder": "Rohit Sharma",
+  //   "accountNumber": "1234567890",
+  //   "ifscCode": "SBIN0000456",
+  //   "promoteCampaign": true,
+  // "projectCategory": "Business",
+  // "projectTitle": "projectTitle",
+  // "profit": "89",
+  // "fundingType": "Profit Return",
+  // "projectOverview": "None",
+  //   "promotion": "yes",  // Options: "yes", "no"
+  //   "promoVideo": "<promovideo_file_data_or_url>",   // Only if promotion is "yes"
+  //   "promoPoster": "<promoposter_file_data_or_url>" // Only if promotion is "yes"
 
   const handleNext = () => {
     if (step < 7) setStep(step + 1);
@@ -41,7 +75,7 @@ export default function StartFundraiser({ LoggedInUser }) {
     } else {
       setFormData((prev) => ({
         ...prev,
-        [name]: value || "",  // Ensure it's not undefined
+        [name]: value || "", // Ensure it's not undefined
       }));
     }
   };
@@ -76,18 +110,70 @@ export default function StartFundraiser({ LoggedInUser }) {
 
     try {
       // Make the API call to submit the fundraiser
-      const response = await axios.post("http://localhost:5000/api/fundraiser/submit", form, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await axios.post(
+        "http://localhost:5000/api/fundraiser/submit",
+        form,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       alert("Fundraiser submitted successfully!");
       navigate("/dashboard");
     } catch (error) {
       console.error("Error submitting fundraiser:", error);
       alert("Error submitting fundraiser.");
+    }
+  };
+
+  const handleCreateFundraiser = async () => {
+    const demoData = {
+      companyName: "Clean Water Startup",
+      overview:
+        "Our project aims to provide affordable water filters to rural areas.",
+      purpose: "Startup", // Options: "Business", "Startup", "Growth"
+      state: "Maharashtra",
+      city: "Pune",
+      pincode: "411045",
+      photo: "<photo_file_data_or_url>", // Usually sent as file, see note below
+      video: "<video_file_data_or_url>", // Optional, usually sent as file
+
+      moneyToRaise: "500000",
+      daysToRaise: "30",
+      profitPercentage: "10", // Only present if fundingType is "profit"
+
+      introduction: "I am an entrepreneur with 10 years experience.",
+      license: "<license_file_data_or_url>", // Usually sent as file
+      kyc: "<kyc_file_data_or_url>", // Usually sent as file
+
+      bankName: "State Bank of India",
+      bankBranch: "MG Road",
+      accountHolder: "Rohit Sharma",
+      accountNumber: "1234567890",
+      ifscCode: "SBIN0000456",
+      promoteCampaign: true,
+      projectCategory: "Business",
+      projectTitle: "projectTitle",
+      profit: "89",
+      fundingType: "Profit Return",
+      projectOverview: "None",
+      promotion: "yes", // Options: "yes", "no"
+      promoVideo: "<promovideo_file_data_or_url>", // Only if promotion is "yes"
+      promoPoster: "<promoposter_file_data_or_url>", // Only if promotion is "yes"
+
+      // For the review step, simply resubmit all fields
+    };
+
+    try {
+      const response = await createFundraiser(demoData);
+      alert("Fundraiser created successfully!");
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Error creating fundraiser:", error);
+      alert("Error creating fundraiser.");
     }
   };
 
@@ -100,7 +186,11 @@ export default function StartFundraiser({ LoggedInUser }) {
           <div
             key={n}
             className={`p-4 cursor-pointer rounded-lg text-center transition-all duration-300 
-            ${n === step ? "bg-yellow-200 text-gray-800" : "bg-gray-200 text-gray-500"}`}
+            ${
+              n === step
+                ? "bg-yellow-200 text-gray-800"
+                : "bg-gray-200 text-gray-500"
+            }`}
             onClick={() => setStep(n)}
           >
             {n === 1 && "Project Details"}
@@ -115,20 +205,27 @@ export default function StartFundraiser({ LoggedInUser }) {
 
       {/* Main Content for Each Step */}
       <div className="w-3/4 p-8">
-        <h1 className="text-4xl font-bold text-gray-800 mb-8 text-center">Start Your Fundraiser</h1>
+        <h1 className="text-4xl font-bold text-gray-800 mb-8 text-center">
+          Start Your Fundraiser
+        </h1>
 
         {/* Step Content */}
         <div className="bg-white p-8 rounded-lg shadow-lg">
           {/* Step 1: Project Details */}
           {step === 1 && (
             <div>
-              <h3 className="text-2xl font-bold text-gray-800 mb-4">Project Details</h3>
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">
+                Project Details
+              </h3>
               <p className="text-sm text-gray-600 mb-4">
-                In this step, you'll provide essential details about your project like title, overview, category, and location.
+                In this step, you'll provide essential details about your
+                project like title, overview, category, and location.
               </p>
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Project Title</h3>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                    Project Title
+                  </h3>
                   <input
                     type="text"
                     name="companyName"
@@ -137,10 +234,14 @@ export default function StartFundraiser({ LoggedInUser }) {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out"
                     placeholder="Enter your project title"
                   />
-                  <p className="text-sm text-gray-600 mt-2">Enter the name of your project or campaign.</p>
+                  <p className="text-sm text-gray-600 mt-2">
+                    Enter the name of your project or campaign.
+                  </p>
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Project Overview</h3>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                    Project Overview
+                  </h3>
                   <textarea
                     name="overview"
                     rows={5}
@@ -149,10 +250,15 @@ export default function StartFundraiser({ LoggedInUser }) {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out"
                     placeholder="Describe your project..."
                   />
-                  <p className="text-sm text-gray-600 mt-2">Provide a brief overview of what your project is about and its goals.</p>
+                  <p className="text-sm text-gray-600 mt-2">
+                    Provide a brief overview of what your project is about and
+                    its goals.
+                  </p>
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Project Category</h3>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                    Project Category
+                  </h3>
                   <select
                     name="purpose"
                     value={formData.purpose}
@@ -164,10 +270,14 @@ export default function StartFundraiser({ LoggedInUser }) {
                     <option value="Startup">Startup</option>
                     <option value="Growth">Company Growth</option>
                   </select>
-                  <p className="text-sm text-gray-600 mt-2">Choose the most suitable category for your project.</p>
+                  <p className="text-sm text-gray-600 mt-2">
+                    Choose the most suitable category for your project.
+                  </p>
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Project Location</h3>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                    Project Location
+                  </h3>
                   <input
                     type="text"
                     name="state"
@@ -192,20 +302,28 @@ export default function StartFundraiser({ LoggedInUser }) {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out mt-4"
                     placeholder="Pincode"
                   />
-                  <p className="text-sm text-gray-600 mt-2">Enter the location where your project is based.</p>
+                  <p className="text-sm text-gray-600 mt-2">
+                    Enter the location where your project is based.
+                  </p>
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Project Image</h3>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                    Project Image
+                  </h3>
                   <input
                     type="file"
                     name="photo"
                     onChange={handleChange}
                     className="file:border file:border-gray-300 file:px-4 file:py-2 file:rounded-lg file:bg-blue-600 file:text-white file:hover:bg-blue-700 file:cursor-pointer"
                   />
-                  <p className="text-sm text-gray-600 mt-2">Upload an image to represent your project.</p>
+                  <p className="text-sm text-gray-600 mt-2">
+                    Upload an image to represent your project.
+                  </p>
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Project Overview Video</h3>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                    Project Overview Video
+                  </h3>
                   <input
                     type="file"
                     name="video"
@@ -213,7 +331,9 @@ export default function StartFundraiser({ LoggedInUser }) {
                     onChange={handleChange}
                     className="file:border file:border-gray-300 file:px-4 file:py-2 file:rounded-lg file:bg-green-600 file:text-white file:hover:bg-green-700 file:cursor-pointer"
                   />
-                  <p className="text-sm text-gray-600 mt-2">Upload a video overview of your project (optional).</p>
+                  <p className="text-sm text-gray-600 mt-2">
+                    Upload a video overview of your project (optional).
+                  </p>
                 </div>
               </div>
             </div>
@@ -224,11 +344,14 @@ export default function StartFundraiser({ LoggedInUser }) {
             <div>
               <h3 className="text-2xl font-bold text-gray-800 mb-4">Funding</h3>
               <p className="text-sm text-gray-600 mb-4">
-                Set the goal for the funds to raise, select the funding type, and determine how much profit (if any) will be returned.
+                Set the goal for the funds to raise, select the funding type,
+                and determine how much profit (if any) will be returned.
               </p>
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Money to Raise</h3>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                    Money to Raise
+                  </h3>
                   <input
                     type="text"
                     name="moneyToRaise"
@@ -237,10 +360,15 @@ export default function StartFundraiser({ LoggedInUser }) {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out"
                     placeholder="Enter the amount to raise"
                   />
-                  <p className="text-sm text-gray-600 mt-2">Specify the target amount you wish to raise for your project.</p>
+                  <p className="text-sm text-gray-600 mt-2">
+                    Specify the target amount you wish to raise for your
+                    project.
+                  </p>
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Days to Raise Funds</h3>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                    Days to Raise Funds
+                  </h3>
                   <input
                     type="text"
                     name="daysToRaise"
@@ -249,10 +377,14 @@ export default function StartFundraiser({ LoggedInUser }) {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out"
                     placeholder="Enter the days to raise funds"
                   />
-                  <p className="text-sm text-gray-600 mt-2">Enter the number of days you plan to raise funds.</p>
+                  <p className="text-sm text-gray-600 mt-2">
+                    Enter the number of days you plan to raise funds.
+                  </p>
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Funding Type</h3>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                    Funding Type
+                  </h3>
                   <select
                     name="fundingType"
                     value={formData.fundingType}
@@ -263,11 +395,15 @@ export default function StartFundraiser({ LoggedInUser }) {
                     <option value="profit">Profit Return</option>
                     <option value="non-profit">Non-Profit Return</option>
                   </select>
-                  <p className="text-sm text-gray-600 mt-2">Select the type of funding for your project.</p>
+                  <p className="text-sm text-gray-600 mt-2">
+                    Select the type of funding for your project.
+                  </p>
                 </div>
                 {formData.fundingType === "profit" && (
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-800 mb-2">Profit Percentage</h3>
+                    <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                      Profit Percentage
+                    </h3>
                     <input
                       type="text"
                       name="profitPercentage"
@@ -276,7 +412,9 @@ export default function StartFundraiser({ LoggedInUser }) {
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out"
                       placeholder="Enter profit percentage"
                     />
-                    <p className="text-sm text-gray-600 mt-2">Enter the percentage of profit that backers will receive.</p>
+                    <p className="text-sm text-gray-600 mt-2">
+                      Enter the percentage of profit that backers will receive.
+                    </p>
                   </div>
                 )}
               </div>
@@ -286,13 +424,18 @@ export default function StartFundraiser({ LoggedInUser }) {
           {/* Step 3: Legal Documents */}
           {step === 3 && (
             <div>
-              <h3 className="text-2xl font-bold text-gray-800 mb-4">Legal Documents</h3>
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">
+                Legal Documents
+              </h3>
               <p className="text-sm text-gray-600 mb-4">
-                Upload your documents and verify your identity to make sure everything is legal and verified.
+                Upload your documents and verify your identity to make sure
+                everything is legal and verified.
               </p>
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Introduce Yourself</h3>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                    Introduce Yourself
+                  </h3>
                   <textarea
                     name="introduction"
                     rows={4}
@@ -301,27 +444,38 @@ export default function StartFundraiser({ LoggedInUser }) {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out"
                     placeholder="Introduce yourself"
                   />
-                  <p className="text-sm text-gray-600 mt-2">Provide a brief introduction of yourself to build trust with your backers.</p>
+                  <p className="text-sm text-gray-600 mt-2">
+                    Provide a brief introduction of yourself to build trust with
+                    your backers.
+                  </p>
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">License Picture</h3>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                    License Picture
+                  </h3>
                   <input
                     type="file"
                     name="license"
                     onChange={handleChange}
                     className="file:border file:border-gray-300 file:px-4 file:py-2 file:rounded-lg file:bg-blue-600 file:text-white file:hover:bg-blue-700 file:cursor-pointer"
                   />
-                  <p className="text-sm text-gray-600 mt-2">Upload a copy of your business license for verification.</p>
+                  <p className="text-sm text-gray-600 mt-2">
+                    Upload a copy of your business license for verification.
+                  </p>
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">KYC Verification</h3>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                    KYC Verification
+                  </h3>
                   <input
                     type="file"
                     name="kyc"
                     onChange={handleChange}
                     className="file:border file:border-gray-300 file:px-4 file:py-2 file:rounded-lg file:bg-green-600 file:text-white file:hover:bg-green-700 file:cursor-pointer"
                   />
-                  <p className="text-sm text-gray-600 mt-2">Upload your KYC document for verification.</p>
+                  <p className="text-sm text-gray-600 mt-2">
+                    Upload your KYC document for verification.
+                  </p>
                 </div>
               </div>
             </div>
@@ -330,13 +484,18 @@ export default function StartFundraiser({ LoggedInUser }) {
           {/* Step 4: Bank Details */}
           {step === 4 && (
             <div>
-              <h3 className="text-2xl font-bold text-gray-800 mb-4">Bank Details</h3>
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">
+                Bank Details
+              </h3>
               <p className="text-sm text-gray-600 mb-4">
-                Enter your bank details for transferring funds if your project is successful.
+                Enter your bank details for transferring funds if your project
+                is successful.
               </p>
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Bank Name</h3>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                    Bank Name
+                  </h3>
                   <input
                     type="text"
                     name="bankName"
@@ -345,10 +504,14 @@ export default function StartFundraiser({ LoggedInUser }) {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out"
                     placeholder="Enter bank name"
                   />
-                  <p className="text-sm text-gray-600 mt-2">Enter the name of your bank.</p>
+                  <p className="text-sm text-gray-600 mt-2">
+                    Enter the name of your bank.
+                  </p>
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Bank Branch</h3>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                    Bank Branch
+                  </h3>
                   <input
                     type="text"
                     name="bankBranch"
@@ -357,10 +520,14 @@ export default function StartFundraiser({ LoggedInUser }) {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out"
                     placeholder="Enter bank branch"
                   />
-                  <p className="text-sm text-gray-600 mt-2">Enter the branch of your bank.</p>
+                  <p className="text-sm text-gray-600 mt-2">
+                    Enter the branch of your bank.
+                  </p>
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Account Holder Name</h3>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                    Account Holder Name
+                  </h3>
                   <input
                     type="text"
                     name="accountHolder"
@@ -369,10 +536,14 @@ export default function StartFundraiser({ LoggedInUser }) {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out"
                     placeholder="Enter account holder name"
                   />
-                  <p className="text-sm text-gray-600 mt-2">Enter the name of the account holder.</p>
+                  <p className="text-sm text-gray-600 mt-2">
+                    Enter the name of the account holder.
+                  </p>
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Account Number</h3>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                    Account Number
+                  </h3>
                   <input
                     type="text"
                     name="accountNumber"
@@ -381,10 +552,14 @@ export default function StartFundraiser({ LoggedInUser }) {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out"
                     placeholder="Enter account number"
                   />
-                  <p className="text-sm text-gray-600 mt-2">Provide your bank account number.</p>
+                  <p className="text-sm text-gray-600 mt-2">
+                    Provide your bank account number.
+                  </p>
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">IFSC Code</h3>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                    IFSC Code
+                  </h3>
                   <input
                     type="text"
                     name="ifscCode"
@@ -393,7 +568,9 @@ export default function StartFundraiser({ LoggedInUser }) {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out"
                     placeholder="Enter IFSC code"
                   />
-                  <p className="text-sm text-gray-600 mt-2">Enter your bank IFSC code.</p>
+                  <p className="text-sm text-gray-600 mt-2">
+                    Enter your bank IFSC code.
+                  </p>
                 </div>
               </div>
             </div>
@@ -402,14 +579,22 @@ export default function StartFundraiser({ LoggedInUser }) {
           {/* Step 5: Promotion/Ad */}
           {step === 5 && (
             <div>
-              <h3 className="text-2xl font-bold text-gray-800 mb-4">Promotion/Ad</h3>
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">
+                Promotion/Ad
+              </h3>
               <p className="text-sm text-gray-600 mb-4">
-                If you want to promote your campaign for more visibility, you can upload promotional content.
+                If you want to promote your campaign for more visibility, you
+                can upload promotional content.
               </p>
               <div className="space-y-4">
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Do you want to promote your campaign?</h3>
-                  <p className="text-sm text-gray-600 mb-2">Choose if you'd like to promote your campaign for extra visibility.</p>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                    Do you want to promote your campaign?
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-2">
+                    Choose if you'd like to promote your campaign for extra
+                    visibility.
+                  </p>
                   <div className="flex gap-4">
                     <label className="flex items-center">
                       <input
@@ -438,16 +623,24 @@ export default function StartFundraiser({ LoggedInUser }) {
 
                 {formData.promotion === "yes" && (
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-800 mb-2">Upload Promotional Video</h3>
+                    <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                      Upload Promotional Video
+                    </h3>
                     <input
                       type="file"
                       name="promoVideo"
                       onChange={handleChange}
                       className="file:border file:border-gray-300 file:px-4 file:py-2 file:rounded-lg file:bg-blue-600 file:text-white file:hover:bg-blue-700 file:cursor-pointer"
                     />
-                    {formData.promoVideo && <span className="text-sm">{formData.promoVideo.name}</span>}
+                    {formData.promoVideo && (
+                      <span className="text-sm">
+                        {formData.promoVideo.name}
+                      </span>
+                    )}
 
-                    <h3 className="text-xl font-semibold text-gray-800 mb-2 mt-4">Upload Promotional Poster</h3>
+                    <h3 className="text-xl font-semibold text-gray-800 mb-2 mt-4">
+                      Upload Promotional Poster
+                    </h3>
                     <div className="flex items-center gap-4">
                       <input
                         type="file"
@@ -455,7 +648,11 @@ export default function StartFundraiser({ LoggedInUser }) {
                         onChange={handleChange}
                         className="file:border file:border-gray-300 file:px-4 file:py-2 file:rounded-lg file:bg-green-600 file:text-white file:hover:bg-green-700 file:cursor-pointer"
                       />
-                      {formData.promoPoster && <span className="text-sm">{formData.promoPoster.name}</span>}
+                      {formData.promoPoster && (
+                        <span className="text-sm">
+                          {formData.promoPoster.name}
+                        </span>
+                      )}
                     </div>
                   </div>
                 )}
@@ -466,26 +663,49 @@ export default function StartFundraiser({ LoggedInUser }) {
           {/* Step 6: Review & Submit */}
           {step === 6 && (
             <div>
-              <h3 className="text-2xl font-bold text-gray-800 mb-4">Review & Submit</h3>
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">
+                Review & Submit
+              </h3>
               <p className="text-sm text-gray-600 mb-4">
-                Please review your information before submitting your fundraiser.
+                Please review your information before submitting your
+                fundraiser.
               </p>
               <ul className="space-y-4">
-                <li><strong>Project Title:</strong> {formData.companyName}</li>
-                <li><strong>Project Overview:</strong> {formData.overview}</li>
-                <li><strong>Project Location:</strong> {formData.state}, {formData.city}, {formData.pincode}</li>
-                <li><strong>Project Category:</strong> {formData.purpose}</li>
-                <li><strong>Funding Amount:</strong> ₹{formData.moneyToRaise}</li>
-                <li><strong>Funding Type:</strong> {formData.fundingType}</li>
+                <li>
+                  <strong>Project Title:</strong> {formData.companyName}
+                </li>
+                <li>
+                  <strong>Project Overview:</strong> {formData.overview}
+                </li>
+                <li>
+                  <strong>Project Location:</strong> {formData.state},{" "}
+                  {formData.city}, {formData.pincode}
+                </li>
+                <li>
+                  <strong>Project Category:</strong> {formData.purpose}
+                </li>
+                <li>
+                  <strong>Funding Amount:</strong> ₹{formData.moneyToRaise}
+                </li>
+                <li>
+                  <strong>Funding Type:</strong> {formData.fundingType}
+                </li>
                 {formData.fundingType === "profit" && (
-                  <li><strong>Profit Percentage:</strong> {formData.profitPercentage}%</li>
+                  <li>
+                    <strong>Profit Percentage:</strong>{" "}
+                    {formData.profitPercentage}%
+                  </li>
                 )}
-                <li><strong>Promotion:</strong> {formData.promotion}</li>
+                <li>
+                  <strong>Promotion:</strong> {formData.promotion}
+                </li>
               </ul>
 
               {formData.photo && (
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Project Image</h3>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                    Project Image
+                  </h3>
                   <img
                     src={URL.createObjectURL(formData.photo)}
                     alt="Project Image"
@@ -495,7 +715,9 @@ export default function StartFundraiser({ LoggedInUser }) {
               )}
               {formData.video && (
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Project Overview Video</h3>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                    Project Overview Video
+                  </h3>
                   <video
                     src={URL.createObjectURL(formData.video)}
                     controls
@@ -505,7 +727,9 @@ export default function StartFundraiser({ LoggedInUser }) {
               )}
               {formData.promoVideo && (
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Promotional Video</h3>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                    Promotional Video
+                  </h3>
                   <video
                     src={URL.createObjectURL(formData.promoVideo)}
                     controls
@@ -515,7 +739,9 @@ export default function StartFundraiser({ LoggedInUser }) {
               )}
               {formData.promoPoster && (
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Promotional Poster</h3>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                    Promotional Poster
+                  </h3>
                   <img
                     src={URL.createObjectURL(formData.promoPoster)}
                     alt="Promo Poster"
@@ -547,7 +773,7 @@ export default function StartFundraiser({ LoggedInUser }) {
             </button>
           ) : (
             <button
-              onClick={handleSubmit}
+              onClick={handleCreateFundraiser} //handleSubmit
               className="bg-green-600 hover:bg-green-700 text-white py-2 px-6 rounded-lg transition-all duration-300"
             >
               Submit Fundraiser
