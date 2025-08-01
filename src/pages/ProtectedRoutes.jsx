@@ -1,20 +1,23 @@
 import React from "react";
-import { Route, Redirect } from "react-router-dom";
+import { Route, Navigate , Routes } from "react-router-dom";
 
 const ProtectedRoute = ({ component: Component, ...rest }) => {
   const token = localStorage.getItem("token");
 
+  // If token exists, the user is logged in; if not, redirect to login page
   return (
+    <Routes>
     <Route
       {...rest}
       render={(props) =>
         token ? (
-          <Component {...props} />
+          <Component {...props} /> // Allow access to the protected component
         ) : (
-          <Redirect to="/login" />
+          <Navigate to="/login" /> // Redirect to login page if no token
         )
       }
     />
+    </Routes>
   );
 };
 

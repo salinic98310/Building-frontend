@@ -11,41 +11,29 @@ import FeaturedProperties from "./components/FeaturedProperties.jsx";
 import SecurityCompliance from "./components/SecurityCompliance.jsx";
 import MoneyGrowth from "./components/MoneyGrowth.jsx";
 import Testimonials from "./components/Testimonials.jsx";
-
+import ProtectedRoute from "./pages/ProtectedRoutes.jsx";
 // Pages
 import BrowseInvestors from "./pages/BrowseInvestors.jsx";
 import InvestmentDetail from "./pages/InvestmentDetail.jsx";
 import FundraisingPage from "./pages/FundraisingPage.jsx";
 import StartFundraiser from "./pages/StartAFundraiser.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
+import AdminDashboard from "./pages/AdminDashboard.jsx"; // Admin Dashboard
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage.jsx";
 
 // Context
 import { FundraiserProvider } from "./context/FundraiserContext.jsx";
 
-// Protected Route Component to ensure only logged-in users can access certain pages
-const ProtectedRoute = ({ element: Element, ...rest }) => {
-  const token = localStorage.getItem("token");
 
-  // If user is not logged in, redirect to login
-  if (!token) {
-    return <LoginPage />;
-  }
-
-  return <Element {...rest} />;
-};
 
 export default function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loggedInUser, setLoggedInUser] = useState(null);
 
-  // Check if the user is logged in (via JWT in localStorage)
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      setIsLoggedIn(true);
-    } else {
-      setIsLoggedIn(false);
+    const user = JSON.parse(localStorage.getItem("loggedInUser"));
+    if (user) {
+      setLoggedInUser(user); // Set logged-in user from localStorage on app load
     }
   }, []);
 
@@ -54,7 +42,7 @@ export default function App() {
       <Router>
         <div className="font-sans text-gray-900">
           {/* Header visible on all routes */}
-          <Header isLoggedIn={isLoggedIn} />
+          <Header loggedInUser={loggedInUser} setLoggedInUser={setLoggedInUser} />
 
           <Routes>
             {/* Home */}
@@ -73,8 +61,10 @@ export default function App() {
             />
 
             {/* Login and Register Pages */}
-            <Route path="/login" element={<LoginPage />} />
+            <Route path="/login" element={<LoginPage setLoggedInUser={setLoggedInUser} />} />
             <Route path="/register" element={<RegisterPage />} />
+            
+            
 
             {/* Browse Investors */}
             <Route
@@ -104,10 +94,10 @@ export default function App() {
             {/* Start Fundraiser */}
             <Route path="/start-fundraiser" element={<StartFundraiser />} />
 
-            {/* Protected Routes */}
+            {/* Protected Routes for Regular Users */}
             <Route
               path="/dashboard"
-              element={<ProtectedRoute element={Dashboard} />}
+              element={<ProtectedRoute element={<Dashboard  />} />}
             />
           </Routes>
         </div>

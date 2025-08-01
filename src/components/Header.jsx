@@ -1,52 +1,40 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-export default function Header({ loggedInUser, setLoggedInUser }) {
+export default function Header() {
   const navigate = useNavigate();
   const [investOpen, setInvestOpen] = useState(false);
   const [fundraiseOpen, setFundraiseOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Track login state
-  const [user, setUser] = useState(null); // Store user data
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [loggedInUser, setLoggedInUser] = useState(null); // State to store logged-in user data
 
-  // Check if user is logged in by looking for the JWT token in localStorage
+  // Check if the user is logged in when the component mounts
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      const decoded = JSON.parse(atob(token.split('.')[1])); // Decode JWT token
-      setIsLoggedIn(true);
-      setUser(decoded); // Set user details from decoded token
-    } else {
-      setIsLoggedIn(false);
+    const user = JSON.parse(localStorage.getItem("loggedInUser"));
+    if (user) {
+      setLoggedInUser(user);
     }
   }, []);
 
   // Handle logout
   const handleLogout = () => {
-    localStorage.removeItem("token"); // Remove token from localStorage
-    setIsLoggedIn(false);
-    setUser(null);
-    setDropdownOpen(false);
-    navigate("/login"); // Redirect to login page after logout
+    localStorage.removeItem("loggedInUser");
+    localStorage.removeItem("token");
+    setLoggedInUser(null);
+    setIsDropdownOpen(false);
+    navigate("/login");
   };
 
-  // Helper function to generate a background color based on the user's name
-  const generateBackgroundColor = (name) => {
-    if (!name) return "#ccc"; // Default color if name is undefined or empty
-    const hash = name.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const color = `hsl(${hash % 360}, 70%, 50%)`; // Generate a color based on the user's name
-    return color;
-  };
-
-  // Get the first letter of the user's name
-  const getFirstLetter = (name) => {
-    if (name && name.length > 0) {
-      return name.charAt(0).toUpperCase();
+  // Render the first letter of the user's name or email as the avatar
+  const getAvatarLetter = () => {
+    if (loggedInUser && loggedInUser.name) {
+      return loggedInUser.name.charAt(0).toUpperCase();
     }
-    return "?"; // Return '?' if the name is empty or undefined
+    if (loggedInUser && loggedInUser.email) {
+      return loggedInUser.email.charAt(0).toUpperCase();
+    }
+    return "U"; // Default to "U" if no user data is available
   };
-
-  console.log(user); // Debugging line to check user object
 
   return (
     <header className="relative z-20 bg-gray-700 shadow-xl py-5 px-8 flex items-center text-base text-white backdrop-blur-lg transition-all duration-300 ease-in-out">
@@ -146,43 +134,74 @@ export default function Header({ loggedInUser, setLoggedInUser }) {
         </div>
       </nav>
 
-      {/* Right-aligned Buttons for Login/Profile */}
-      <div className="flex gap-6 items-center ml-auto">
-        {isLoggedIn ? (
+      {/* User icon or logged-in avatar */}
+      {loggedInUser ? (
+        <div className="relative">
           <div
-            onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="relative cursor-pointer flex items-center justify-center w-12 h-12 rounded-full"
-            style={{
-              backgroundColor: generateBackgroundColor(user?.name), // Color based on name
-              color: "#fff",
-              fontSize: "1.25rem", // Increase font size for better visibility
-              fontWeight: "bold", // Bold for better clarity
-            }}
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-pink-600 text-white font-bold cursor-pointer"
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           >
-            {getFirstLetter(user?.name)} {/* Display first letter inside circle */}
-            {dropdownOpen && (
-              <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-300 shadow-lg rounded-lg overflow-hidden">
-                <div className="px-4 py-2 text-gray-800 cursor-pointer" onClick={() => navigate("/profile")}>
-                  My Profile
-                </div>
-                <div className="px-4 py-2 text-gray-800 cursor-pointer" onClick={() => navigate("/settings")}>
-                  Profile Settings
-                </div>
-                <div className="px-4 py-2 text-gray-800 cursor-pointer" onClick={handleLogout}>
-                  Logout
-                </div>
-              </div>
-            )}
+            {getAvatarLetter()}
           </div>
-        ) : (
-          <Link
-            to="/login"
-            className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded transition-all duration-300"
-          >
-            Login
-          </Link>
-        )}
-      </div>
+          {isDropdownOpen && (
+            <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-300 shadow-lg rounded-lg overflow-hidden">
+              <div className="flex justify-end p-2">
+                <button
+                  className="text-gray-500 hover:text-gray-700 text-lg"
+                  onClick={() => setIsDropdownOpen(false)}
+                >
+                  ×
+                </button>
+              </div>
+              <div className="flex flex-col items-center p-4 pt-0">
+                <div className="w-20 h-20 rounded-full bg-pink-600 text-white text-3xl font-bold flex items-center justify-center">
+                  {getAvatarLetter()}
+                </div>
+                <div className="mt-2 text-gray-800 font-semibold text-center text-lg">
+                  Hi, {loggedInUser.name.toUpperCase()}!
+                </div>
+                <div className="text-sm text-gray-500 text-center">
+                  {loggedInUser.email}
+                </div>
+                
+              </div>
+              <div className="flex border-t border-gray-200">
+                <button
+                  className="flex-1 text-sm text-gray-700 p-3 hover:bg-gray-100"
+                  onClick={() => navigate("/dashboard")}
+                >
+                  Dashboard
+                </button>
+                <button
+                  className="flex-1 text-sm text-gray-700 p-3 hover:bg-gray-100"
+                  onClick={() => navigate("/dashboard")}
+                >
+                  My Profile
+                </button>
+                <button
+                  className="flex-1 text-sm text-gray-700 p-3 hover:bg-gray-100"
+                  onClick={() => navigate("/dashboard")}
+                >
+                  Profile settings
+                </button>
+                <button
+                  className="flex-1 text-sm text-gray-700 p-3 hover:bg-gray-100"
+                  onClick={handleLogout}
+                >
+                  Sign out
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        <button
+          onClick={() => navigate("/login")}
+          className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded transition-all duration-300"
+        >
+          Login
+        </button>
+      )}
     </header>
   );
 }

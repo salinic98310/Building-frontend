@@ -1,42 +1,51 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom"; // useNavigate instead of useHistory
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-export default function LoginPage() {
+export default function LoginPage({ setLoggedInUser }) {
+  const navigate = useNavigate();
+  const [username, setUsername] = useState(""); // State for username
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [role, setRole] = useState(""); // State for the dropdown
-  const [isNewUser, setIsNewUser] = useState(false); // State for "New User?" section
-  const navigate = useNavigate(); // useNavigate hook for navigation
+  const [isNewUser, setIsNewUser] = useState(false); // State to toggle between login and registration
 
-  // Handle login form submission
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      navigate("/login");
+    }
+  }, [navigate]);
+
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    // Validation check for empty fields
     if (email === "" || password === "") {
       setError("Please fill in both fields.");
       return;
     }
 
-    // Handle login logic: send data to backend for authentication
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/login", { email, password, role });
+      const response = await axios.post("http://localhost:5000/api/auth/login", {
+        email,
+        password,
+      });
 
-      // Handle successful login response
-      console.log(response.data); // You may log response data to inspect
+      // Handle successful login
+      const { token, user } = response.data;
 
-      // Save JWT token to localStorage
-      localStorage.setItem("token", response.data.token);
+      // Store user data and token in localStorage
+      Cookies.set("token", token, { expires: 7 }); // Expires in 7 days (optional)
 
-      // Redirect user to dashboard or different page after login
-      navigate("/dashboard"); // Replace with your desired route
+      // Update global state with the logged-in user
+
+      // Redirect user to their dashboard
+      navigate("/dashboard");
     } catch (err) {
-      // Handle errors from the backend
       setError(err.response?.data?.message || "Login failed. Please try again.");
     }
   };
+
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-[#A7C7E7] via-[#E3F1FF] to-[#F0F8FF]">
@@ -48,6 +57,20 @@ export default function LoginPage() {
 
         {/* Login Form */}
         <form onSubmit={handleLogin}>
+          <div className="mb-6">
+            <label htmlFor="username" className="block text-sm font-medium text-gray-700">Username</label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mt-2 text-gray-700 border-gray-300"
+              placeholder="Enter your username"
+              required
+            />
+          </div>
+
           <div className="mb-6">
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
             <input
@@ -74,24 +97,6 @@ export default function LoginPage() {
               placeholder="Enter your password"
               required
             />
-          </div>
-
-          {/* Role Selection Dropdown */}
-          <div className="mb-6">
-            <label htmlFor="role" className="block text-sm font-medium text-gray-700">I am a</label>
-            <select
-              id="role"
-              name="role"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mt-2 text-gray-700 border-gray-300"
-              required
-            >
-              <option value="">Select Role</option>
-              <option value="investor">Investor</option>
-              <option value="fundraiser">Fundraiser</option>
-              <option value="admin">Admin</option>
-            </select>
           </div>
 
           {/* Login Button */}

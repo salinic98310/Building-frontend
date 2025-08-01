@@ -1,14 +1,14 @@
 import React, { useState } from "react";
-import {Link, useNavigate } from "react-router-dom"; // useNavigate for navigation in React Router v6
-import axios from "axios";
+import { Link, useNavigate } from "react-router-dom"; // useNavigate for navigation in React Router v6
+import axios from "axios"; // For making API requests
 
 export default function RegisterPage() {
   const navigate = useNavigate(); // useNavigate hook to navigate after registration
+  const [username, setUsername] = useState(""); // State for username
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [role, setRole] = useState(""); // Role state for dropdown
   const [error, setError] = useState(""); // Error state for validation
   const [successMessage, setSuccessMessage] = useState(""); // Success message state
 
@@ -16,7 +16,7 @@ export default function RegisterPage() {
     e.preventDefault();
 
     // Validation check for empty fields
-    if (name === "" || email === "" || password === "" || confirmPassword === "") {
+    if (username === "" || name === "" || email === "" || password === "" || confirmPassword === "") {
       setError("Please fill in all fields.");
       return;
     }
@@ -30,11 +30,11 @@ export default function RegisterPage() {
     try {
       // Send registration data to backend
       const response = await axios.post("http://localhost:5000/api/auth/register", {
+        username,  // Added username to the request
         name,
         email,
         password,
         confirmPassword,
-        role,
       });
 
       // Handle successful registration response
@@ -42,14 +42,14 @@ export default function RegisterPage() {
       setError(""); // Clear any previous errors
 
       // Clear form fields after successful registration
+      setUsername("");
       setName("");
       setEmail("");
       setPassword("");
       setConfirmPassword("");
-      setRole("");
 
       // Redirect to login page after success
-      // Use navigate to go to the login page
+      navigate("/login");
 
     } catch (err) {
       // Handle errors from the backend
@@ -72,6 +72,20 @@ export default function RegisterPage() {
         {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
 
         {/* Registration Form */}
+        <div className="mb-4">
+          <label htmlFor="username" className="block text-sm font-medium text-gray-700">Username</label>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="w-full px-4 py-2 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mt-2 text-gray-700 border-[#D1D5DB] placeholder-[#9CA3AF]"
+            placeholder="Enter your username"
+            required
+          />
+        </div>
+
         <div className="mb-4">
           <label htmlFor="name" className="block text-sm font-medium text-gray-700">Full Name</label>
           <input
@@ -126,23 +140,6 @@ export default function RegisterPage() {
             placeholder="Confirm your password"
             required
           />
-        </div>
-
-        {/* Role Selection Dropdown */}
-        <div className="mb-4">
-          <label htmlFor="role" className="block text-sm font-medium text-gray-700">I am a</label>
-          <select
-            id="role"
-            name="role"
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-            className="w-full px-4 py-2 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mt-2 text-gray-700 border-[#D1D5DB] placeholder-[#9CA3AF]"
-          >
-            <option value="">Select Role</option>
-            <option value="investor">Investor</option>
-            <option value="fundraiser">Fundraiser</option>
-            <option value="admin">Admin</option>
-          </select>
         </div>
 
         {/* Register Button */}

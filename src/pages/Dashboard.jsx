@@ -9,6 +9,7 @@ export default function Dashboard() {
   const [modalVisible, setModalVisible] = useState(false);
   const navigate = useNavigate();
 
+  // Fetch the user data and their fundraisers
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -22,6 +23,7 @@ export default function Dashboard() {
         return;
       }
 
+      // Fetch fundraisers related to the logged-in user
       axios
         .get(`http://localhost:5000/api/fundraiser/${userId}`, {
           headers: {
@@ -35,7 +37,7 @@ export default function Dashboard() {
           console.error("Error fetching fundraisers", error);
         });
     }
-  }, [navigate]);
+  }, [navigate , userId]);
 
   const handleViewDetails = (campaign) => {
     setSelectedCampaign(campaign);
@@ -79,7 +81,14 @@ export default function Dashboard() {
           </ul>
         </div>
         <div className="text-center mt-6">
-          <button className="bg-[#F8D388] py-2 px-4 rounded-lg w-full text-gray-700 hover:bg-[#F8E1A1] transition-all duration-300">
+          <button
+            className="bg-[#F8D388] py-2 px-4 rounded-lg w-full text-gray-700 hover:bg-[#F8E1A1] transition-all duration-300"
+            onClick={() => {
+              localStorage.removeItem("token");
+              localStorage.removeItem("userId");
+              navigate("/login");
+            }}
+          >
             Log Out
           </button>
         </div>
@@ -166,48 +175,6 @@ export default function Dashboard() {
                 ) : (
                   <p>No fundraisers created yet. Start a fundraiser!</p>
                 )}
-
-                {/* Static Example Campaign */}
-                <div className="absolute top-105 left-72 bg-white rounded-lg shadow-md overflow-hidden w-100">
-                  <div className="relative">
-                    <img
-                      src="property2.jpg"
-                      alt="Example Campaign"
-                      className="w-full h-52 object-cover"
-                    />
-                    <span className="absolute bottom-2 left-2 bg-black bg-opacity-60 text-white text-sm px-3 py-1 rounded-full">
-                      Demo City
-                    </span>
-                  </div>
-                  <div className="p-4">
-                    <h4 className="font-semibold text-lg">Example Campaign</h4>
-                    <p className="text-sm text-gray-700 mt-1">
-                      A mock campaign for testing visuals.
-                    </p>
-                    <div className="mt-4 mb-2">
-                      <div className="h-2 bg-gray-200 rounded-full">
-                        <div
-                          className="h-2 bg-green-500 rounded-full"
-                          style={{ width: "50%" }}
-                        />
-                      </div>
-                    </div>
-                    <p className="text-sm font-semibold text-gray-900">$2,500 raised</p>
-                    <button
-                      onClick={() =>
-                        handleViewDetails({
-                          companyName: "Example Campaign",
-                          moneyToRaise: 5000,
-                          raisedAmount: 2500,
-                          overview: "This is an example campaign",
-                        })
-                      }
-                      className="mt-4 w-full bg-[#F8D388] text-gray-800 font-medium py-2 rounded-lg transition hover:bg-[#f4c66d]"
-                    >
-                      View Details
-                    </button>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
