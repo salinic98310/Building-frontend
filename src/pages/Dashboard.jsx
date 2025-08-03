@@ -32,8 +32,7 @@ export default function Dashboard() {
   }, []);
 
   const handleViewDetails = (campaign) => {
-    setSelectedCampaign(campaign);
-    setModalVisible(true);
+    navigate(`/investment-detail`, { state: { campaign } });
   };
 
   const handleCloseModal = () => {
@@ -130,12 +129,12 @@ export default function Dashboard() {
                     >
                       <div className="relative">
                         <img
-                          src={fundraiser.image}
-                          alt={fundraiser.companyName}
+                          src={fundraiser.photo }
+                          alt={fundraiser.projectTitle}
                           className="w-full h-52 object-cover"
                         />
                         <span className="absolute bottom-2 left-2 bg-black bg-opacity-60 text-white text-sm px-3 py-1 rounded-full">
-                          {fundraiser.location || "Unknown"}
+                          {fundraiser.location }
                         </span>
                       </div>
                       <div className="p-4">
@@ -143,7 +142,7 @@ export default function Dashboard() {
                           {fundraiser.companyName}
                         </h4>
                         <p className="text-sm text-gray-700 mt-1">
-                          {fundraiser.shortDescription ||
+                          {fundraiser.projectOverview||
                             "Help us reach our goal!"}
                         </p>
                         <div className="mt-4 mb-2">
@@ -181,13 +180,13 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Campaign Details Modal */}
+        {/* Campaign Details Modal 
         {modalVisible && selectedCampaign && (
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
             <div className="bg-white p-6 rounded-lg shadow-lg w-2/3 max-w-4xl">
               <h3 className="text-2xl font-bold mb-4">Campaign Details</h3>
               <h4 className="text-xl font-semibold mb-2">
-                {selectedCampaign.companyName}
+                {selectedCampaign.projectTitle}
               </h4>
               <p>
                 <strong>Goal:</strong> ${selectedCampaign.moneyToRaise}
@@ -196,7 +195,10 @@ export default function Dashboard() {
                 <strong>Raised Amount:</strong> ${selectedCampaign.raisedAmount}
               </p>
               <p>
-                <strong>Overview:</strong> {selectedCampaign.overview}
+                <strong>Overview:</strong> {selectedCampaign.projectOverview}
+              </p>
+              <p>
+                <strong>Profit Return:</strong> {selectedCampaign.profitPercentage}%
               </p>
               <button
                 onClick={handleCloseModal}
@@ -207,6 +209,7 @@ export default function Dashboard() {
             </div>
           </div>
         )}
+          */}
       </div>
     </section>
   );

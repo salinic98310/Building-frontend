@@ -2,32 +2,57 @@ import React, { useState } from "react";
 import { data, useNavigate } from "react-router-dom";
 import axios from "axios"; // For making API requests
 import { createFundraiser } from "../api/user";
+ // Import multer for file handling
 
 export default function StartFundraiser({ LoggedInUser }) {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    state: "", // Ensure all inputs are controlled
-    city: "",
-    pincode: "",
-    purpose: "",
-    photo: null, // File inputs can be null
-    overview: "",
-    video: null,
-    companyName: "",
-    promotion: "", // Added promotion option
-    promoVideo: null,
-    promoPoster: null,
-    moneyToRaise: "",
-    fundingType: "",
-    profitPercentage: "",
-    daysToRaise: "",
+   companyName: "",
+  overview: "",
+  purpose: "", // "Business", "Startup", "Growth"
+  projectTitle: "",
+  projectCategory: "", // "Business", "Startup", "Company Growth"
+  projectOverview: "",
+
+  // Step 2: Location
+  state: "",
+  city: "",
+  pincode: "",
+
+  // Step 3: Media Uploads
+  photo: null,
+  video: null,
+
+  // Step 4: Funding Info
+  moneyToRaise: "",
+  daysToRaise: "",
+  fundingType: "", // "Profit Return", "Non-Profit Return"
+  profitPercentage: "",
+
+  // Step 5: Legal
+  introduction: "",
+  license: null,
+  kyc: null,
+
+  // Step 6: Bank Details
+  bankName: "",
+  bankBranch: "",
+  accountHolder: "",
+  accountNumber: "",
+  ifscCode: "",
+
+  // Step 7: Promotion
+  promoteCampaign: false,
+  promotion: "", // "yes" or "no"
+  promoVideo: null,
+  promoPoster: null,
   });
 
   //   {
-  //   "companyName": "Clean Water Startup",
-  //   "overview": "Our project aims to provide affordable water filters to rural areas.",
-  //   "purpose": "Startup",   // Options: "Business", "Startup", "Growth"
+  //   "companyName": "",
+  //   "overview": "",
+  //   "purpose": "",   // Options: "Business", "Startup", "Growth"
   //   "state": "Maharashtra",
   //   "city": "Pune",
   //   "pincode": "411045",
@@ -87,24 +112,53 @@ export default function StartFundraiser({ LoggedInUser }) {
       return;
     }
 
+    
     // Create a FormData instance to send the data including files
     const form = new FormData();
-    form.append("companyName", formData.companyName);
-    form.append("overview", formData.overview);
-    form.append("purpose", formData.purpose);
-    form.append("state", formData.state);
-    form.append("city", formData.city);
-    form.append("pincode", formData.pincode);
-    form.append("photo", formData.photo);
-    form.append("video", formData.video);
-    form.append("promoVideo", formData.promoVideo);
-    form.append("promoPoster", formData.promoPoster);
-    form.append("promotion", formData.promotion);
-    form.append("moneyToRaise", formData.moneyToRaise);
-    form.append("fundingType", formData.fundingType);
-    form.append("profitPercentage", formData.profitPercentage);
-    form.append("daysToRaise", formData.daysToRaise);
-    form.append("userId", LoggedInUser._id); // Pass the logged-in user's ID
+    form.append("userId", LoggedInUser._id);
+
+// Step 1: Company & Project Info
+form.append("companyName", formData.companyName);
+form.append("overview", formData.overview);
+form.append("purpose", formData.purpose);
+form.append("projectTitle", formData.projectTitle);
+form.append("projectCategory", formData.projectCategory);
+form.append("projectOverview", formData.projectOverview);
+
+// Step 2: Location
+form.append("state", formData.state);
+form.append("city", formData.city);
+form.append("pincode", formData.pincode);
+
+// Step 3: Media Uploads (files)
+if (formData.photo) form.append("photo", formData.photo);
+if (formData.video) form.append("video", formData.video);
+if (formData.promoVideo) form.append("promoVideo", formData.promoVideo);
+if (formData.promoPoster) form.append("promoPoster", formData.promoPoster);
+
+// Step 4: Funding Info
+form.append("moneyToRaise", formData.moneyToRaise);
+form.append("daysToRaise", formData.daysToRaise);
+form.append("fundingType", formData.fundingType);
+if (formData.fundingType === "Profit Return " && formData.profitPercentage)
+  form.append("profitPercentage", formData.profitPercentage);
+
+// Step 5: Legal
+form.append("introduction", formData.introduction || "");
+if (formData.license) form.append("license", formData.license);
+if (formData.kyc) form.append("kyc", formData.kyc);
+
+// Step 6: Bank Details
+form.append("bankName", formData.bankName);
+form.append("bankBranch", formData.bankBranch);
+form.append("accountHolder", formData.accountHolder);
+form.append("accountNumber", formData.accountNumber);
+form.append("ifscCode", formData.ifscCode);
+
+// Step 7: Promotion
+form.append("promoteCampaign", formData.promoteCampaign);
+form.append("promotion", formData.promotion); // Pass the logged-in user's ID
+
 
     const token = localStorage.getItem("token");
 
@@ -131,39 +185,54 @@ export default function StartFundraiser({ LoggedInUser }) {
 
   const handleCreateFundraiser = async () => {
     const demoData = {
-      companyName: "Clean Water Startup",
-      overview:
-        "Our project aims to provide affordable water filters to rural areas.",
-      purpose: "Startup", // Options: "Business", "Startup", "Growth"
-      state: "Maharashtra",
-      city: "Pune",
-      pincode: "411045",
-      photo: "<photo_file_data_or_url>", // Usually sent as file, see note below
-      video: "<video_file_data_or_url>", // Optional, usually sent as file
+      companyName: formData.companyName || "",
+  overview: formData.overview || "",
+  purpose: formData.purpose || "",
+  projectTitle: formData.projectTitle || "", // REQUIRED
+  projectCategory: formData.projectCategory || "",
+  projectOverview: formData.projectOverview || "",
 
-      moneyToRaise: "500000",
-      daysToRaise: "30",
-      profitPercentage: "10", // Only present if fundingType is "profit"
+  // Step 2: Location
+  state: formData.state || "",
+  city: formData.city || "",
+  pincode: formData.pincode || "",
 
-      introduction: "I am an entrepreneur with 10 years experience.",
-      license: "<license_file_data_or_url>", // Usually sent as file
-      kyc: "<kyc_file_data_or_url>", // Usually sent as file
+  // Step 3: Media Uploads
+  photo: formData.photo || null,         // File (optional, but must be File if sent)
+  video: formData.video || null,         // File (optional)
 
-      bankName: "State Bank of India",
-      bankBranch: "MG Road",
-      accountHolder: "Rohit Sharma",
-      accountNumber: "1234567890",
-      ifscCode: "SBIN0000456",
-      promoteCampaign: true,
-      projectCategory: "Business",
-      projectTitle: "projectTitle",
-      profit: "89",
-      fundingType: "Profit Return",
-      projectOverview: "None",
-      promotion: "yes", // Options: "yes", "no"
-      promoVideo: "<promovideo_file_data_or_url>", // Only if promotion is "yes"
-      promoPoster: "<promoposter_file_data_or_url>", // Only if promotion is "yes"
+  // Step 4: Funding Info
+  moneyToRaise: formData.moneyToRaise || "",
+  daysToRaise: formData.daysToRaise || "",
 
+  // Fix enum casing: convert "profit" to "Profit Return" (for backend schema match)
+  fundingType:
+    formData.fundingType === "Profit Return"
+      ? "Profit Return"
+      : formData.fundingType === "Non-Profit Return"
+      ? "Non-Profit Return"
+      : "",
+
+  profitPercentage:
+    formData.fundingType === "profit" ? formData.profitPercentage || "" : "",
+
+  // Step 5: Legal
+  introduction: formData.introduction || "", // REQUIRED
+  license: formData.license || null,
+  kyc: formData.kyc || null,
+
+  // Step 6: Bank Details
+  bankName: formData.bankName || "",
+  bankBranch: formData.bankBranch || "",
+  accountHolder: formData.accountHolder || "",
+  accountNumber: formData.accountNumber || "",
+  ifscCode: formData.ifscCode || "",
+
+  // Step 7: Promotion
+  promoteCampaign: !!formData.promoteCampaign,
+  promotion: formData.promotion || "no",
+  promoVideo: formData.promotion === "yes" ? formData.promoVideo || null : null,
+  promoPoster: formData.promotion === "yes" ? formData.promoPoster || null : null,
       // For the review step, simply resubmit all fields
     };
 
@@ -228,8 +297,8 @@ export default function StartFundraiser({ LoggedInUser }) {
                   </h3>
                   <input
                     type="text"
-                    name="companyName"
-                    value={formData.companyName || ""}
+                    name="projectTitle"
+                    value={formData.projectTitle || ""}
                     onChange={handleChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out"
                     placeholder="Enter your project title"
@@ -243,9 +312,9 @@ export default function StartFundraiser({ LoggedInUser }) {
                     Project Overview
                   </h3>
                   <textarea
-                    name="overview"
+                    name="projectOverview"
                     rows={5}
-                    value={formData.overview || ""}
+                    value={formData.projectOverview || ""}
                     onChange={handleChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out"
                     placeholder="Describe your project..."
@@ -260,15 +329,15 @@ export default function StartFundraiser({ LoggedInUser }) {
                     Project Category
                   </h3>
                   <select
-                    name="purpose"
-                    value={formData.purpose}
+                    name="projectCategory"
+                    value={formData.projectCategory }
                     onChange={handleChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out"
                   >
                     <option value="">Select Category</option>
                     <option value="Business">Business</option>
                     <option value="Startup">Startup</option>
-                    <option value="Growth">Company Growth</option>
+                    <option value="Company Growth">Company Growth</option>
                   </select>
                   <p className="text-sm text-gray-600 mt-2">
                     Choose the most suitable category for your project.
@@ -313,6 +382,8 @@ export default function StartFundraiser({ LoggedInUser }) {
                   <input
                     type="file"
                     name="photo"
+                    accept="image/*"
+                    
                     onChange={handleChange}
                     className="file:border file:border-gray-300 file:px-4 file:py-2 file:rounded-lg file:bg-blue-600 file:text-white file:hover:bg-blue-700 file:cursor-pointer"
                   />
@@ -328,6 +399,7 @@ export default function StartFundraiser({ LoggedInUser }) {
                     type="file"
                     name="video"
                     accept="video/*"
+                  
                     onChange={handleChange}
                     className="file:border file:border-gray-300 file:px-4 file:py-2 file:rounded-lg file:bg-green-600 file:text-white file:hover:bg-green-700 file:cursor-pointer"
                   />
@@ -392,14 +464,14 @@ export default function StartFundraiser({ LoggedInUser }) {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out"
                   >
                     <option value="">Select Type</option>
-                    <option value="profit">Profit Return</option>
-                    <option value="non-profit">Non-Profit Return</option>
+                    <option value="Profit Return">Profit Return</option>
+                    <option value="Non-Profit Return">Non-Profit Return</option>
                   </select>
                   <p className="text-sm text-gray-600 mt-2">
                     Select the type of funding for your project.
                   </p>
                 </div>
-                {formData.fundingType === "profit" && (
+                {formData.fundingType === "Profit Return" && (
                   <div>
                     <h3 className="text-xl font-semibold text-gray-800 mb-2">
                       Profit Percentage
@@ -439,7 +511,7 @@ export default function StartFundraiser({ LoggedInUser }) {
                   <textarea
                     name="introduction"
                     rows={4}
-                    value={formData.introduction}
+                    value={formData.introduction || ""}
                     onChange={handleChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out"
                     placeholder="Introduce yourself"
@@ -456,7 +528,9 @@ export default function StartFundraiser({ LoggedInUser }) {
                   <input
                     type="file"
                     name="license"
+                    accept="image/*"
                     onChange={handleChange}
+                   
                     className="file:border file:border-gray-300 file:px-4 file:py-2 file:rounded-lg file:bg-blue-600 file:text-white file:hover:bg-blue-700 file:cursor-pointer"
                   />
                   <p className="text-sm text-gray-600 mt-2">
@@ -470,6 +544,9 @@ export default function StartFundraiser({ LoggedInUser }) {
                   <input
                     type="file"
                     name="kyc"
+                    accept="image/*"
+                    
+                    
                     onChange={handleChange}
                     className="file:border file:border-gray-300 file:px-4 file:py-2 file:rounded-lg file:bg-green-600 file:text-white file:hover:bg-green-700 file:cursor-pointer"
                   />
@@ -484,6 +561,7 @@ export default function StartFundraiser({ LoggedInUser }) {
           {/* Step 4: Bank Details */}
           {step === 4 && (
             <div>
+              
               <h3 className="text-2xl font-bold text-gray-800 mb-4">
                 Bank Details
               </h3>

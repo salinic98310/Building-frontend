@@ -1,60 +1,31 @@
 import React, { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
-// Import images
-import property1 from "../assets/sample-img1.jpg";
-import property2 from "../assets/property2.jpg";
-import property3 from "../assets/property3.jpg";
+const InvestmentDetail = () => {
+  const { state } = useLocation();
+  const navigate = useNavigate();
+  const [showVideo, setShowVideo] = useState(false);
 
-// Import local video
-import overviewVideo from "../assets/startup.mp4";
-
-const investmentData = {
-  "urban-heights-ventures": {
-    title: "Urban Heights Ventures",
-    image: property1,
-    raised: 59473,
-    goal: 280000,
-    description: `
-Urban Heights Ventures is focused on building sustainable urban housing solutions.
-Our mission is to combine modern architecture with eco-friendly materials and provide affordable living spaces.
-`,
-    policies: [
-      "Transparent fund allocation",
-      "Quarterly reporting to investors",
-      "Verified compliance with local regulations",
-    ],
-    documents: ["Business License.pdf", "Financial Statement 2024.pdf"],
-    gallery: [property1, property2, property3],
-    comments: [
-      {
-        author: "Sneha Bhatt",
-        amount: 2500,
-        message: "Amazing project! Excited to see it grow.",
-      },
-      {
-        author: "Rohit Bansal",
-        amount: 5000,
-        message: "Transparency and innovation at its best.",
-      },
-    ],
-  },
-};
-
-export default function InvestmentDetail() {
-  const { id } = useParams();
-  const investment = investmentData[id];
-  const [showVideo, setShowVideo] = useState(false); // for modal toggle
-
-  if (!investment) {
-    return <div className="p-10 text-center">Investment not found.</div>;
+  if (!state?.campaign) {
+    return (
+      <div className="p-10">
+        <h1 className="text-2xl font-bold text-red-600">No campaign data found.</h1>
+        <button
+          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
+          onClick={() => navigate(-1)}
+        >
+          Go Back
+        </button>
+      </div>
+    );
   }
 
-  const progressPercent = (investment.raised / investment.goal) * 100;
+  const campaign = state.campaign;
+  const progressPercent = (campaign.raisedAmount / campaign.moneyToRaise) * 100 || 0;
 
   return (
     <section className="bg-white px-4 py-10 relative overflow-hidden">
-      {/* Video Button (top-right) */}
+      {/* Video Button */}
       <button
         onClick={() => setShowVideo(true)}
         className="absolute top-4 right-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 z-10"
@@ -76,7 +47,7 @@ export default function InvestmentDetail() {
               </button>
             </div>
             <video
-              src={overviewVideo}
+              src={campaign.video}
               controls
               className="w-full rounded-lg max-h-[80vh]"
             />
@@ -87,16 +58,16 @@ export default function InvestmentDetail() {
       <div className="max-w-7xl mx-auto">
         {/* Title */}
         <h1 className="text-3xl md:text-4xl font-bold mb-8 text-center">
-          {investment.title}
+          {campaign.projectTitle}
         </h1>
 
-        {/* First Row: Image, Donation Info, About and Documents */}
+        {/* Main Row */}
         <div className="flex flex-col md:flex-row gap-1 mb-12 items-center justify-between">
           {/* Image */}
           <div className="w-full md:w-1/3 flex justify-center items-center mb-6 md:mb-0">
             <img
-              src={investment.image}
-              alt={investment.title}
+              src={campaign.photo}
+              alt={campaign.projectTitle}
               className="w-full h-100 object-cover rounded-lg"
             />
           </div>
@@ -104,10 +75,10 @@ export default function InvestmentDetail() {
           {/* Donation Info */}
           <div className="w-full md:w-1/4 bg-white border border-gray-200 rounded-xl shadow p-6 mb-6 md:mb-0">
             <p className="text-xl font-semibold mb-1">
-              ₹{investment.raised.toLocaleString()} raised
+              ₹{campaign.raisedAmount?.toLocaleString() || 0} raised
             </p>
             <p className="text-gray-600 mb-4">
-              of ₹{investment.goal.toLocaleString()} goal
+              of ₹{campaign.moneyToRaise?.toLocaleString()} goal
             </p>
 
             {/* Circular Progress */}
@@ -141,7 +112,6 @@ export default function InvestmentDetail() {
               </div>
             </div>
 
-            {/* Buttons */}
             <button className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-2 rounded mb-2">
               Share
             </button>
@@ -149,12 +119,11 @@ export default function InvestmentDetail() {
               Donate Now
             </button>
 
-            {/* Recent Donors */}
             <div>
               <p className="text-sm font-medium mb-2 text-purple-700">
-                {investment.comments.length} people just donated
+                Recent Donations
               </p>
-              {investment.comments.map((c, i) => (
+              {(campaign.recentDonors || []).map((c, i) => (
                 <div
                   key={i}
                   className="flex justify-between text-sm mb-1 text-gray-800"
@@ -166,39 +135,62 @@ export default function InvestmentDetail() {
             </div>
           </div>
 
-          {/* About the Project and Documents */}
+          {/* About + Documents */}
           <div className="w-full md:w-1/3">
             <h2 className="text-2xl font-semibold mb-4">About the Project</h2>
             <p className="text-gray-700 whitespace-pre-line mb-4">
-              {investment.description}
+              {campaign.projectOverview || campaign.introduction}
             </p>
 
             <h2 className="text-2xl font-semibold mb-4">Documents</h2>
             <ul className="text-blue-600">
-              {investment.documents.map((doc, i) => (
+              {(campaign.documents || []).map((doc, i) => (
                 <li key={i}>
-                  <a href="#">{doc}</a>
+                  <a href={doc.url || "#"} target="_blank" rel="noreferrer">
+                    {doc.name || doc}
+                  </a>
                 </li>
               ))}
             </ul>
           </div>
         </div>
+              {/* About + Documents */}
+          <div className="w-full md:w-1/3">
+            <h2 className="text-2xl font-semibold mb-4">About the Project</h2>
+            <p className="text-gray-700 whitespace-pre-line mb-4">
+              {campaign.projectOverview || campaign.introduction}
+            </p>
 
-        {/* Second Row: Gallery */}
-        <div className="w-150 mb-10">
-          <h2 className="text-2xl font-semibold mb-4">Gallery</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {investment.gallery.map((img, i) => (
-              <img
-                key={i}
-                src={img}
-                alt={`Gallery ${i + 1}`}
-                className="rounded w-full h-48 object-cover"
-              />
-            ))}
+            <h2 className="text-2xl font-semibold mb-4">Documents</h2>
+            <ul className="text-blue-600">
+              {(campaign.documents || []).map((doc, i) => (
+                <li key={i}>
+                  <a href={doc.url || "#"} target="_blank" rel="noreferrer">
+                    {doc.name || doc}
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
-        </div>
+        {/* Gallery */}
+        {campaign.gallery?.length > 0 && (
+          <div className="w-full mb-10">
+            <h2 className="text-2xl font-semibold mb-4">Gallery</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {campaign.gallery.map((img, i) => (
+                <img
+                  key={i}
+                  src={img}
+                  alt={`Gallery ${i + 1}`}
+                  className="rounded w-full h-48 object-cover"
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
-}
+};
+
+export default InvestmentDetail;

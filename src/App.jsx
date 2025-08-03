@@ -80,7 +80,7 @@ export default function App() {
             />
 
             {/* Investment Detail */}
-            <Route path="/investment/:id" element={<InvestmentDetail />} />
+            <Route path="/investment-detail" element={<InvestmentDetail />} />
 
             {/* Fundraising Page */}
             <Route

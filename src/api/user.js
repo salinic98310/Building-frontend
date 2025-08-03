@@ -3,7 +3,7 @@ const user = JSON.parse(localStorage.getItem("user"));
 
 export const loginUser = async (email, password) => {
   try {
-    const response = await api.post("/auth/login", { email, password });
+    const response = await api.post("/auth/login", {  email, password });
     return response.data; // Return user data and token
   } catch (error) {
     throw error.response?.data || new Error("Login failed");
