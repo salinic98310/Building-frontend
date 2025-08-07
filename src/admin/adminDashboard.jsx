@@ -25,7 +25,7 @@ export default function AdminDashboard() {
       try {
         setLoading(true);
         const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/admin/dashboard`,
+          `${import.meta.env.VITE_API_BASE_URL}/api/admin/dashboard`,
           { withCredentials: true }
         );
         console.log("stats in frontend :", response.data);
