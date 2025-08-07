@@ -3,14 +3,14 @@ const user = JSON.parse(localStorage.getItem("user"));
 
 export const loginUser = async (email, password) => {
   try {
-    const response = await api.post("/auth/login", {  email, password });// Store user
+    const response = await api.post("/auth/login", { email, password }); // Store user
     return response.data; // Return user data and token
   } catch (error) {
     throw error.response?.data || new Error("Login failed");
   }
 };
 
-export const registerUser = async (username, name ,email, password) => {
+export const registerUser = async (username, name, email, password) => {
   try {
     const response = await api.post("/auth/register", {
       username,
@@ -37,9 +37,14 @@ export const createFundraiser = async (fundraiserData) => {
   try {
     const response = await api.post(
       `/fundraiser/create-fundraiser/${user.id}`,
-      fundraiserData
-    );  
-    return response.data; // Return created fundraiser data
+      fundraiserData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    return response.data;
   } catch (error) {
     throw error.response?.data || new Error("Failed to create fundraiser");
   }

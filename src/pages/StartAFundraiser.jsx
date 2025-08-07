@@ -2,52 +2,54 @@ import React, { useState } from "react";
 import { data, useNavigate } from "react-router-dom";
 import axios from "axios"; // For making API requests
 import { createFundraiser } from "../api/user";
- // Import multer for file handling
+// Import multer for file handling
 
 export default function StartFundraiser({ LoggedInUser }) {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
+  const [kycImage, setKycImage] = useState(null);
+  console.log("kycImage", kycImage);
   const [formData, setFormData] = useState({
-   companyName: "",
-  overview: "",
-  purpose: "", // "Business", "Startup", "Growth"
-  projectTitle: "",
-  projectCategory: "", // "Business", "Startup", "Company Growth"
-  projectOverview: "",
+    companyName: "",
+    overview: "",
+    purpose: "", // "Business", "Startup", "Growth"
+    projectTitle: "",
+    projectCategory: "", // "Business", "Startup", "Company Growth"
+    projectOverview: "",
 
-  // Step 2: Location
-  state: "",
-  city: "",
-  country: "",
+    // Step 2: Location
+    state: "",
+    city: "",
+    country: "",
 
-  // Step 3: Media Uploads
-  photo: null,
-  video: null,
+    // Step 3: Media Uploads
+    photo: null,
+    video: null,
 
-  // Step 4: Funding Info
-  moneyToRaise: "",
-  daysToRaise: "",
-  fundingType: "", // "Profit Return", "Non-Profit Return"
-  profitPercentage: "",
+    // Step 4: Funding Info
+    moneyToRaise: "",
+    daysToRaise: "",
+    fundingType: "", // "Profit Return", "Non-Profit Return"
+    profitPercentage: "",
 
-  // Step 5: Legal
-  introduction: "",
-  license: null,
-  kyc: null,
-  pan: null, // Optional, if needed
+    // Step 5: Legal
+    introduction: "",
+    license: null,
+    kyc: null,
+    pan: null, // Optional, if needed
 
-  // Step 6: Bank Details
-  bankName: "",
-  bankBranch: "",
-  accountHolder: "",
-  accountNumber: "",
-  ifscCode: "",
+    // Step 6: Bank Details
+    bankName: "",
+    bankBranch: "",
+    accountHolder: "",
+    accountNumber: "",
+    ifscCode: "",
 
-  // Step 7: Promotion
-  promoteCampaign: false,
-  promotion: "", // "yes" or "no"
-  promoVideo: null,
-  promoPoster: null,
+    // Step 7: Promotion
+    promoteCampaign: false,
+    promotion: "", // "yes" or "no"
+    promoVideo: null,
+    promoPoster: null,
   });
 
   //   {
@@ -107,145 +109,61 @@ export default function StartFundraiser({ LoggedInUser }) {
   };
 
   const handleSubmit = async () => {
-    if (!LoggedInUser) {
-      alert("You need to be logged in to submit a fundraiser.");
-      navigate("/login");
-      return;
-    }
-
-    
     // Create a FormData instance to send the data including files
     const form = new FormData();
-    form.append("userId", LoggedInUser._id);
+    // form.append("userId", LoggedInUser._id);
 
-// Step 1: Company & Project Info
-form.append("companyName", formData.companyName);
-form.append("overview", formData.overview);
-form.append("purpose", formData.purpose);
-form.append("projectTitle", formData.projectTitle);
-form.append("projectCategory", formData.projectCategory);
-form.append("projectOverview", formData.projectOverview);
+    // Step 1: Company & Project Info
+    form.append("projectTitle", formData.projectTitle);
+    form.append("projectCategory", formData.projectCategory);
+    form.append("projectOverview", formData.projectOverview);
 
-// Step 2: Location
-form.append("state", formData.state);
-form.append("city", formData.city);
-form.append("country", formData.country);
+    // Step 2: Location
+    form.append("state", formData.state);
+    form.append("city", formData.city);
+    form.append("country", formData.country);
 
-// Step 3: Media Uploads (files)
-if (formData.photo) form.append("photo", formData.photo);
-if (formData.video) form.append("video", formData.video);
-if (formData.promoVideo) form.append("promoVideo", formData.promoVideo);
-if (formData.promoPoster) form.append("promoPoster", formData.promoPoster);
+    // Step 3: Media Uploads (files)
+    if (formData.photo) form.append("photo", formData.photo);
+    if (formData.video) form.append("video", formData.video);
+    if (formData.promoVideo) form.append("promoVideo", formData.promoVideo);
+    if (formData.promoPoster) form.append("promoPoster", formData.promoPoster);
 
-// Step 4: Funding Info
-form.append("moneyToRaise", formData.moneyToRaise);
-form.append("daysToRaise", formData.daysToRaise);
-form.append("fundingType", formData.fundingType);
-if (formData.fundingType === "Profit Return " && formData.profitPercentage)
-  form.append("profitPercentage", formData.profitPercentage);
+    // Step 4: Funding Info
+    form.append("moneyToRaise", formData.moneyToRaise);
+    form.append("daysToRaise", formData.daysToRaise);
+    form.append("fundingType", formData.fundingType);
+    if (formData.fundingType === "Profit Return " && formData.profitPercentage)
+      form.append("profitPercentage", formData.profitPercentage);
 
-// Step 5: Legal
-form.append("introduction", formData.introduction || "");
-if (formData.license) form.append("license", formData.license);
-if (formData.kyc) form.append("kyc", formData.kyc);
-if (formData.pan) form.append("pan", formData.pan); 
+    // Step 5: Legal
+    form.append("introduction", formData.introduction || "");
+    if (formData.license) form.append("license", formData.license);
+    form.append("kyc", kycImage);
+    if (formData.pan) form.append("pan", formData.pan);
 
-// Step 6: Bank Details
-form.append("bankName", formData.bankName);
-form.append("bankBranch", formData.bankBranch);
-form.append("accountHolder", formData.accountHolder);
-form.append("accountNumber", formData.accountNumber);
-form.append("ifscCode", formData.ifscCode);
+    // Step 6: Bank Details
+    form.append("bankName", formData.bankName);
+    form.append("bankBranch", formData.bankBranch);
+    form.append("accountHolder", formData.accountHolder);
+    form.append("accountNumber", formData.accountNumber);
+    form.append("ifscCode", formData.ifscCode);
 
-// Step 7: Promotion
-form.append("promoteCampaign", formData.promoteCampaign);
-form.append("promotion", formData.promotion); // Pass the logged-in user's ID
-
+    // Step 7: Promotion
+    form.append("promoteCampaign", formData.promoteCampaign);
+    form.append("promotion", formData.promotion); // Pass the logged-in user's ID
 
     const token = localStorage.getItem("token");
 
     try {
+      console.log("form", form);
       // Make the API call to submit the fundraiser
-      const response = await axios.post(
-        "http://localhost:5000/api/fundraiser/submit",
-        form,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
+      const response = await createFundraiser(form);
       alert("Fundraiser submitted successfully!");
       navigate("/dashboard");
     } catch (error) {
       console.error("Error submitting fundraiser:", error);
       alert("Error submitting fundraiser.");
-    }
-  };
-
-  const handleCreateFundraiser = async () => {
-    const demoData = {
-      companyName: formData.companyName || "",
-  overview: formData.overview || "",
-  purpose: formData.purpose || "",
-  projectTitle: formData.projectTitle || "", // REQUIRED
-  projectCategory: formData.projectCategory || "",
-  projectOverview: formData.projectOverview || "",
-
-  // Step 2: Location
-  state: formData.state || "",
-  city: formData.city || "",
-  pincode: formData.country || "",
-
-  // Step 3: Media Uploads
-  photo: formData.photo || null,         // File (optional, but must be File if sent)
-  video: formData.video || null,         // File (optional)
-
-  // Step 4: Funding Info
-  moneyToRaise: formData.moneyToRaise || "",
-  daysToRaise: formData.daysToRaise || "",
-
-  // Fix enum casing: convert "profit" to "Profit Return" (for backend schema match)
-  fundingType:
-    formData.fundingType === "Profit Return"
-      ? "Profit Return"
-      : formData.fundingType === "Non-Profit Return"
-      ? "Non-Profit Return"
-      : "",
-
-  profitPercentage:
-    formData.fundingType === "profit" ? formData.profitPercentage || "" : "",
-
-  // Step 5: Legal
-  introduction: formData.introduction || "", // REQUIRED
-  license: formData.license || null,
-  kyc: formData.kyc || null,
-  pan: formData.pan || null, // Optional, if needed
-
-  // Step 6: Bank Details
-  bankName: formData.bankName || "",
-  bankBranch: formData.bankBranch || "",
-  accountHolder: formData.accountHolder || "",
-  accountNumber: formData.accountNumber || "",
-  ifscCode: formData.ifscCode || "",
-
-  // Step 7: Promotion
-  promoteCampaign: !!formData.promoteCampaign,
-  promotion: formData.promotion || "no",
-  promoVideo: formData.promotion === "yes" ? formData.promoVideo || null : null,
-  promoPoster: formData.promotion === "yes" ? formData.promoPoster || null : null,
-      // For the review step, simply resubmit all fields
-    };
-
-    try {
-      const response = await createFundraiser(demoData);
-      alert("Fundraiser created successfully!");
-      navigate("/dashboard");
-    } catch (error) {
-      console.error("Error creating fundraiser:", error);
-      alert("Error creating fundraiser.");
     }
   };
 
@@ -333,7 +251,7 @@ form.append("promotion", formData.promotion); // Pass the logged-in user's ID
                   </h3>
                   <select
                     name="projectCategory"
-                    value={formData.projectCategory }
+                    value={formData.projectCategory}
                     onChange={handleChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out"
                   >
@@ -386,7 +304,6 @@ form.append("promotion", formData.promotion); // Pass the logged-in user's ID
                     type="file"
                     name="photo"
                     accept="image/*"
-                    
                     onChange={handleChange}
                     className="file:border file:border-gray-300 file:px-4 file:py-2 file:rounded-lg file:bg-blue-600 file:text-white file:hover:bg-blue-700 file:cursor-pointer"
                   />
@@ -402,7 +319,6 @@ form.append("promotion", formData.promotion); // Pass the logged-in user's ID
                     type="file"
                     name="video"
                     accept="video/*"
-                  
                     onChange={handleChange}
                     className="file:border file:border-gray-300 file:px-4 file:py-2 file:rounded-lg file:bg-green-600 file:text-white file:hover:bg-green-700 file:cursor-pointer"
                   />
@@ -533,14 +449,13 @@ form.append("promotion", formData.promotion); // Pass the logged-in user's ID
                     name="license"
                     accept="image/*"
                     onChange={handleChange}
-                   
                     className="file:border file:border-gray-300 file:px-4 file:py-2 file:rounded-lg file:bg-blue-600 file:text-white file:hover:bg-blue-700 file:cursor-pointer"
                   />
                   <p className="text-sm text-gray-600 mt-2">
                     Upload a copy of your business license for verification.
                   </p>
                 </div>
-                
+
                 <div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-2">
                     KYC Verification
@@ -549,7 +464,9 @@ form.append("promotion", formData.promotion); // Pass the logged-in user's ID
                     type="file"
                     name="kyc"
                     accept="image/*"
-                    onChange={handleChange}
+                    onChange={(e) => {
+                      setKycImage(e.target.files[0]);
+                    }}
                     className="file:border file:border-gray-300 file:px-4 file:py-2 file:rounded-lg file:bg-green-600 file:text-white file:hover:bg-green-700 file:cursor-pointer"
                   />
                   <p className="text-sm text-gray-600 mt-2">
@@ -565,7 +482,6 @@ form.append("promotion", formData.promotion); // Pass the logged-in user's ID
                     name="pan"
                     accept="image/*"
                     onChange={handleChange}
-                   
                     className="file:border file:border-gray-300 file:px-4 file:py-2 file:rounded-lg file:bg-blue-600 file:text-white file:hover:bg-blue-700 file:cursor-pointer"
                   />
                   <p className="text-sm text-gray-600 mt-2">
@@ -579,7 +495,6 @@ form.append("promotion", formData.promotion); // Pass the logged-in user's ID
           {/* Step 4: Bank Details */}
           {step === 4 && (
             <div>
-              
               <h3 className="text-2xl font-bold text-gray-800 mb-4">
                 Bank Details
               </h3>
@@ -869,7 +784,7 @@ form.append("promotion", formData.promotion); // Pass the logged-in user's ID
             </button>
           ) : (
             <button
-              onClick={handleCreateFundraiser} //handleSubmit
+              onClick={handleSubmit} //handleSubmit
               className="bg-green-600 hover:bg-green-700 text-white py-2 px-6 rounded-lg transition-all duration-300"
             >
               Submit Fundraiser
