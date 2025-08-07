@@ -18,10 +18,9 @@ import InvestmentDetail from "./pages/InvestmentDetail.jsx";
 import FundraisingPage from "./pages/FundraisingPage.jsx";
 import StartFundraiser from "./pages/StartAFundraiser.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
-import AdminDashboard from "./pages/AdminDashboard.jsx"; // Admin Dashboard
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage.jsx";
-
+import AdminDashboard from "../src/admin/adminDashboard.jsx"; // Admin Dashboard component
 // Context
 import { FundraiserProvider } from "./context/FundraiserContext.jsx";
 
@@ -98,6 +97,8 @@ export default function App() {
 
             {/* Protected Routes for Regular Users */}
             <Route path="/dashboard" element={<Dashboard />} />
+
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
           </Routes>
         </div>
       </Router>

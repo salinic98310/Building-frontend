@@ -18,7 +18,7 @@ export default function StartFundraiser({ LoggedInUser }) {
   // Step 2: Location
   state: "",
   city: "",
-  pincode: "",
+  country: "",
 
   // Step 3: Media Uploads
   photo: null,
@@ -34,6 +34,7 @@ export default function StartFundraiser({ LoggedInUser }) {
   introduction: "",
   license: null,
   kyc: null,
+  pan: null, // Optional, if needed
 
   // Step 6: Bank Details
   bankName: "",
@@ -128,7 +129,7 @@ form.append("projectOverview", formData.projectOverview);
 // Step 2: Location
 form.append("state", formData.state);
 form.append("city", formData.city);
-form.append("pincode", formData.pincode);
+form.append("country", formData.country);
 
 // Step 3: Media Uploads (files)
 if (formData.photo) form.append("photo", formData.photo);
@@ -147,6 +148,7 @@ if (formData.fundingType === "Profit Return " && formData.profitPercentage)
 form.append("introduction", formData.introduction || "");
 if (formData.license) form.append("license", formData.license);
 if (formData.kyc) form.append("kyc", formData.kyc);
+if (formData.pan) form.append("pan", formData.pan); 
 
 // Step 6: Bank Details
 form.append("bankName", formData.bankName);
@@ -195,7 +197,7 @@ form.append("promotion", formData.promotion); // Pass the logged-in user's ID
   // Step 2: Location
   state: formData.state || "",
   city: formData.city || "",
-  pincode: formData.pincode || "",
+  pincode: formData.country || "",
 
   // Step 3: Media Uploads
   photo: formData.photo || null,         // File (optional, but must be File if sent)
@@ -220,6 +222,7 @@ form.append("promotion", formData.promotion); // Pass the logged-in user's ID
   introduction: formData.introduction || "", // REQUIRED
   license: formData.license || null,
   kyc: formData.kyc || null,
+  pan: formData.pan || null, // Optional, if needed
 
   // Step 6: Bank Details
   bankName: formData.bankName || "",
@@ -365,11 +368,11 @@ form.append("promotion", formData.promotion); // Pass the logged-in user's ID
                   />
                   <input
                     type="text"
-                    name="pincode"
-                    value={formData.pincode}
+                    name="country"
+                    value={formData.country}
                     onChange={handleChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-200 transition duration-300 ease-in-out mt-4"
-                    placeholder="Pincode"
+                    placeholder="Country"
                   />
                   <p className="text-sm text-gray-600 mt-2">
                     Enter the location where your project is based.
@@ -537,6 +540,7 @@ form.append("promotion", formData.promotion); // Pass the logged-in user's ID
                     Upload a copy of your business license for verification.
                   </p>
                 </div>
+                
                 <div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-2">
                     KYC Verification
@@ -545,13 +549,27 @@ form.append("promotion", formData.promotion); // Pass the logged-in user's ID
                     type="file"
                     name="kyc"
                     accept="image/*"
-                    
-                    
                     onChange={handleChange}
                     className="file:border file:border-gray-300 file:px-4 file:py-2 file:rounded-lg file:bg-green-600 file:text-white file:hover:bg-green-700 file:cursor-pointer"
                   />
                   <p className="text-sm text-gray-600 mt-2">
                     Upload your KYC document for verification.
+                  </p>
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                    Pan Card
+                  </h3>
+                  <input
+                    type="file"
+                    name="pan"
+                    accept="image/*"
+                    onChange={handleChange}
+                   
+                    className="file:border file:border-gray-300 file:px-4 file:py-2 file:rounded-lg file:bg-blue-600 file:text-white file:hover:bg-blue-700 file:cursor-pointer"
+                  />
+                  <p className="text-sm text-gray-600 mt-2">
+                    Upload a copy of your PAN card for verification.
                   </p>
                 </div>
               </div>

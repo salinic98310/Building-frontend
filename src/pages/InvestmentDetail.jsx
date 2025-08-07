@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-
+import sampleImg from "../assets/fundraising-example.jpg"; 
 const InvestmentDetail = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
@@ -66,7 +66,7 @@ const InvestmentDetail = () => {
           {/* Image */}
           <div className="w-full md:w-1/3 flex justify-center items-center mb-6 md:mb-0">
             <img
-              src={campaign.photo}
+              src={campaign.photo || sampleImg} // Fallback to sample image if no photo is available
               alt={campaign.projectTitle}
               className="w-full h-100 object-cover rounded-lg"
             />
@@ -135,42 +135,43 @@ const InvestmentDetail = () => {
             </div>
           </div>
 
-          {/* About + Documents */}
+          {/* type + Documents */}
           <div className="w-full md:w-1/3">
-            <h2 className="text-2xl font-semibold mb-4">About the Project</h2>
-            <p className="text-gray-700 whitespace-pre-line mb-4">
-              {campaign.projectOverview || campaign.introduction}
-            </p>
+            
 
             <h2 className="text-2xl font-semibold mb-4">Documents</h2>
             <ul className="text-blue-600">
-              {(campaign.documents || []).map((doc, i) => (
+              {(campaign.Licences || []).map((license_file_data_or_url, i) => (
                 <li key={i}>
-                  <a href={doc.url || "#"} target="_blank" rel="noreferrer">
-                    {doc.name || doc}
+                  <a href={license_file_data_or_url.url || "#"} target="_blank" rel="noreferrer">
+                    {license_file_data_or_url.name || license_file_data_or_url}
                   </a>
                 </li>
               ))}
             </ul>
+            <h2 className="text-2xl font-semibold mb-4">About Company</h2>
+            <p className="text-gray-700 whitespace-pre-line mb-8 ">
+              {campaign.fundingType === "Profit Return" && (
+                <>
+                  <span className="font-semibold ">Funding Type:</span> {campaign.fundingType} <br />
+                  <span className="font-semibold">Profit Percentage:</span> {campaign.profitPercentage || 0}% <br />
+                </>
+              )}
+              <span className="font-semibold"> Company Type:</span> {campaign.projectCategory || "N/A"} <br />
+             <span className="font-semibold">Location:</span> {campaign.projectLocation?.city || "N/A"}, {campaign.projectLocation?.InvestmentDetail.state || "N/A"}, {campaign.projectLocation?.country || "N/A"} <br />
+              <span className="font-semibold">Created At:</span> {new Date(campaign.createdAt).toLocaleDateString()} <br />
+              <span className="font-semibold">Days to Raise:</span> {campaign.daysToRaise || 0} days <br />
+              <span className="font-semibold">Licenses:</span> {campaign.license_file_data_or_url|| "KYC and Pan Approved "} <br />
+            </p>
           </div>
         </div>
               {/* About + Documents */}
-          <div className="w-full md:w-1/3">
+          <div className="w-full ">
             <h2 className="text-2xl font-semibold mb-4">About the Project</h2>
             <p className="text-gray-700 whitespace-pre-line mb-4">
               {campaign.projectOverview || campaign.introduction}
             </p>
 
-            <h2 className="text-2xl font-semibold mb-4">Documents</h2>
-            <ul className="text-blue-600">
-              {(campaign.documents || []).map((doc, i) => (
-                <li key={i}>
-                  <a href={doc.url || "#"} target="_blank" rel="noreferrer">
-                    {doc.name || doc}
-                  </a>
-                </li>
-              ))}
-            </ul>
           </div>
         {/* Gallery */}
         {campaign.gallery?.length > 0 && (

@@ -3,23 +3,24 @@ const user = JSON.parse(localStorage.getItem("user"));
 
 export const loginUser = async (email, password) => {
   try {
-    const response = await api.post("/auth/login", {  email, password });
+    const response = await api.post("/auth/login", {  email, password });// Store user
     return response.data; // Return user data and token
   } catch (error) {
     throw error.response?.data || new Error("Login failed");
   }
 };
 
-export const registerUser = async (username, email, password) => {
+export const registerUser = async (username, name ,email, password) => {
   try {
     const response = await api.post("/auth/register", {
       username,
+      name,
       email,
       password,
     });
     return response.data; // Return user data and token
   } catch (error) {
-    throw error.response?.data || new Error("Login failed");
+    throw error.response?.data || new Error("Registration failed");
   }
 };
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import heroImg from "../assets/investors-hero.jpg"; // Replace with your hero image
-import sampleImg from "../assets/startup-sample.jpg"; // Replace with your sample image
+import sampleImg from "../assets/fundraising-example.jpg"; // Replace with your sample image
 import { getAllCampaigns } from "../api/campaign";
 import { useNavigate } from "react-router-dom";
 
@@ -66,15 +66,15 @@ export default function BrowseInvestors() {
             >
               <div className="relative">
                 <img
-                  src={f.companyId ? sampleImg : f.photo} // Fallback to sample image if no photo is available
-                  alt={f.companyId ? f.companyId.companyName : "Company Image"}
+                  src={f.companyId ? f.companyId.photo : f.photo || sampleImg} // Fallback to sample image if no photo is available
+                  alt={f.companyId ? f.companyId.projectTitle : f.projectTitle}
                   className="w-full h-40 object-cover rounded-lg"
                 />
                 <span className="absolute top-2 left-2 bg-black text-white text-xs px-2 py-1 rounded">
                   {f.companyId
-                    ? f.companyId.companyName.split(" ")[0]
-                    : "Startup"}
-                  , India
+                    ? f.companyId.projectTitle.split(" ")[0]
+                    : f.state}, {f.city}
+                  , {f.country}
                 </span>
               </div>
               <h3 className="font-semibold text-lg mt-4 text-gray-900">
@@ -92,7 +92,10 @@ export default function BrowseInvestors() {
                 />
               </div>
               <p className="text-sm text-gray-700 font-medium">
-                ₹{f.moneyToRaise || 0} raised
+                Target Amount : ₹{f.moneyToRaise || 0} 
+              </p>
+              <p className="text-sm text-gray-700 font-medium">
+                ₹{f.moneyRaised || 0} raised
               </p>
 
               <button

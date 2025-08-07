@@ -1,32 +1,56 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import { loginUser } from "../api/user";
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const [username, setUsername] = useState(""); // State for username
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [isNewUser, setIsNewUser] = useState(false); // State to toggle between login and registration
+  const [isNewUser, setIsNewUser] = useState(false);
+
+  const [adminLogin, setAdminLogin] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
     if (email === "" || password === "") {
       setError("Please fill in both fields.");
       return;
     }
-    const userData = await loginUser(email, password);
-    console.log("userData", userData);
-    if (userData) {
-      Cookies.set("token", userData?.token, { expires: 7 });
-      localStorage.setItem("user", JSON.stringify(userData?.user));
-      navigate("/dashboard"); // Redirect to dashboard after successful login
-    } else {
-      setError("Login failed. Please check your credentials.");
+
+    try {
+      const userData = await loginUser(email, password);
+      console.log("userData", userData);
+
+      if (!userData || !userData.user) {
+        setError("Login failed. Please check your credentials.");
+        return;
+      }
+
+      Cookies.set("token", userData.token, { expires: 7 });
+      localStorage.setItem("user", JSON.stringify(userData.user));
+
+      if (userData.user.role === "admin") {
+        setAdminLogin(true); // This will trigger useEffect
+      } else {
+        navigate("/dashboard");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setError("Something went wrong. Please try again.");
     }
   };
+
+  // ✅ useEffect: If adminLogin is true, redirect to admin dashboard
+  useEffect(() => {
+    if (adminLogin) {
+      navigate("/admin/dashboard");
+    }
+  }, [adminLogin, navigate]);
+
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-[#A7C7E7] via-[#E3F1FF] to-[#F0F8FF]">

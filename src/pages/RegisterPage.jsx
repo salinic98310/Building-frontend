@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { registerUser } from "../api/user";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -30,7 +31,7 @@ export default function RegisterPage() {
     }
 
     try {
-      const response = await registerUser(username, email, password);
+      const response = await registerUser(username, name ,email, password);
       console.log("Registration response:", response);
       setSuccessMessage("Registration successful! Redirecting to login...");
       setUsername("");
@@ -91,6 +92,7 @@ export default function RegisterPage() {
           onChange={setPassword}
           type="password"
           placeholder="Enter your password"
+          autocomplete="new-password"
         />
 
         <InputField
@@ -100,6 +102,7 @@ export default function RegisterPage() {
           onChange={setConfirmPassword}
           type="password"
           placeholder="Confirm your password"
+          autocomplete="new-password"
         />
 
         <button

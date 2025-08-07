@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import heroBg from "../assets/hero-bg.jpg"; // Background image
 import img1 from "../assets/img1.jpg";
 import img2 from "../assets/img2.jpg";
@@ -6,6 +7,7 @@ import img3 from "../assets/img3.jpg";
 import img4 from "../assets/img4.jpg";
 import img5 from "../assets/img5.jpg";
 import img6 from "../assets/img6.jpg";
+
 
 // Circular image with gradient grey progress border and label
 function CircularProgressImage({
@@ -20,7 +22,7 @@ function CircularProgressImage({
   const circumference = 2 * Math.PI * radius;
   const dashOffset = circumference - (circumference * percentage) / 100;
   const gradientId = `gradient-${Math.random().toString(36).substr(2, 9)}`;
-
+  
   return (
     <div className="relative" style={{ width: size, height: size }}>
       {/* SVG progress ring */}
@@ -86,6 +88,7 @@ function CircularProgressImage({
 }
 
 export default function Hero() {
+  const navigate = useNavigate();
   return (
     <>
       {/* Top Blue Banner */}
@@ -154,7 +157,7 @@ export default function Hero() {
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight">
               Successful fundraisers start here
             </h1>
-            <button className="bg-black text-white px-8 py-4 rounded text-xl">
+            <button onClick={() => navigate("/fundraising")} className="bg-black text-white px-8 py-4 rounded text-xl">
               Start A Fundraiser
             </button>
           </div>
