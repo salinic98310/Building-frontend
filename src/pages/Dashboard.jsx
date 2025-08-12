@@ -32,6 +32,7 @@ if (!userId) return; // Safeguard
 const data = await getDashboardData(userId);
       console.log("data", data);
       setFundraisers(data.data);
+      
       setTotalRaisedMoney(
         data.data.reduce((total, fundraiser) => {
           return total + fundraiser.moneyToRaise;
@@ -168,7 +169,7 @@ const campaignAnalyticsData = [
                     >
                       <div className="relative">
                         <img
-                          src={fundraiser.photo } // Fallback to hero image if no photo is available}
+                          src={fundraiser.photo} // Fallback to hero image if no photo is available}
                           alt={fundraiser.projectTitle}
                           className="w-full h-52 object-cover"
                         />
@@ -234,7 +235,7 @@ const campaignAnalyticsData = [
                   >
                     <div className="relative">
                       <img
-                        src={fundraiser.photo}
+                        src={fundraiser.photo || heroImg} // Fallback to hero image if no photo is available
                         alt={fundraiser.projectTitle}
                         className="w-full h-52 object-cover"
                       />
