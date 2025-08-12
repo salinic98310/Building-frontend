@@ -8,7 +8,20 @@ export default function StartFundraiser({ LoggedInUser }) {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [kycImage, setKycImage] = useState(null);
+  const [video, setVideo] = useState(null);
+  const [license, setLicense] = useState(null);
+  const [pan, setPan] = useState(null);
+  const [promoPoster, setPromoPoster] = useState(null);
+  const [promoVideo, setPromoVideo] = useState(null);
   console.log("kycImage", kycImage);
+  console.log("license",license);
+  console.log("pan",pan);
+  console.log("promoPoster",promoPoster);
+  console.log("promoVideo",promoVideo);
+  console.log("video",video);
+
+  const [photo, setPhoto] = useState(null);
+    console.log("photo",photo);
   const [formData, setFormData] = useState({
     companyName: "",
     overview: "",
@@ -124,10 +137,10 @@ export default function StartFundraiser({ LoggedInUser }) {
     form.append("country", formData.country);
 
     // Step 3: Media Uploads (files)
-    if (formData.photo) form.append("photo", formData.photo);
-    if (formData.video) form.append("video", formData.video);
-    if (formData.promoVideo) form.append("promoVideo", formData.promoVideo);
-    if (formData.promoPoster) form.append("promoPoster", formData.promoPoster);
+     form.append("photo", photo);
+     form.append("video", video);
+     form.append("promoVideo", promoVideo);
+     form.append("promoPoster", promoPoster);
 
     // Step 4: Funding Info
     form.append("moneyToRaise", formData.moneyToRaise);
@@ -138,9 +151,10 @@ export default function StartFundraiser({ LoggedInUser }) {
 
     // Step 5: Legal
     form.append("introduction", formData.introduction || "");
-    if (formData.license) form.append("license", formData.license);
+    form.append("license", license);
     form.append("kyc", kycImage);
-    if (formData.pan) form.append("pan", formData.pan);
+    form.append("pan", formData.pan);
+    form.append("pan", pan);
 
     // Step 6: Bank Details
     form.append("bankName", formData.bankName);
@@ -304,7 +318,9 @@ export default function StartFundraiser({ LoggedInUser }) {
                     type="file"
                     name="photo"
                     accept="image/*"
-                    onChange={handleChange}
+                     onChange={(e) => {
+                      setPhoto(e.target.files[0]);
+                    }}
                     className="file:border file:border-gray-300 file:px-4 file:py-2 file:rounded-lg file:bg-blue-600 file:text-white file:hover:bg-blue-700 file:cursor-pointer"
                   />
                   <p className="text-sm text-gray-600 mt-2">
@@ -319,7 +335,9 @@ export default function StartFundraiser({ LoggedInUser }) {
                     type="file"
                     name="video"
                     accept="video/*"
-                    onChange={handleChange}
+                     onChange={(e) => {
+                      setVideo(e.target.files[0]);
+                    }}
                     className="file:border file:border-gray-300 file:px-4 file:py-2 file:rounded-lg file:bg-green-600 file:text-white file:hover:bg-green-700 file:cursor-pointer"
                   />
                   <p className="text-sm text-gray-600 mt-2">
@@ -448,7 +466,9 @@ export default function StartFundraiser({ LoggedInUser }) {
                     type="file"
                     name="license"
                     accept="image/*"
-                    onChange={handleChange}
+                     onChange={(e) => {
+                      setLicense(e.target.files[0]);
+                    }}
                     className="file:border file:border-gray-300 file:px-4 file:py-2 file:rounded-lg file:bg-blue-600 file:text-white file:hover:bg-blue-700 file:cursor-pointer"
                   />
                   <p className="text-sm text-gray-600 mt-2">
@@ -481,7 +501,9 @@ export default function StartFundraiser({ LoggedInUser }) {
                     type="file"
                     name="pan"
                     accept="image/*"
-                    onChange={handleChange}
+                     onChange={(e) => {
+                      setPan(e.target.files[0]);
+                    }}
                     className="file:border file:border-gray-300 file:px-4 file:py-2 file:rounded-lg file:bg-blue-600 file:text-white file:hover:bg-blue-700 file:cursor-pointer"
                   />
                   <p className="text-sm text-gray-600 mt-2">
@@ -640,14 +662,12 @@ export default function StartFundraiser({ LoggedInUser }) {
                     <input
                       type="file"
                       name="promoVideo"
-                      onChange={handleChange}
+                     onChange={(e) => {
+                      setPromoVideo(e.target.files[0]);
+                    }}
                       className="file:border file:border-gray-300 file:px-4 file:py-2 file:rounded-lg file:bg-blue-600 file:text-white file:hover:bg-blue-700 file:cursor-pointer"
                     />
-                    {formData.promoVideo && (
-                      <span className="text-sm">
-                        {formData.promoVideo.name}
-                      </span>
-                    )}
+                    
 
                     <h3 className="text-xl font-semibold text-gray-800 mb-2 mt-4">
                       Upload Promotional Poster
@@ -656,14 +676,12 @@ export default function StartFundraiser({ LoggedInUser }) {
                       <input
                         type="file"
                         name="promoPoster"
-                        onChange={handleChange}
+                        onChange={(e) => {
+                       setPromoPoster(e.target.files[0]);
+                    }}
                         className="file:border file:border-gray-300 file:px-4 file:py-2 file:rounded-lg file:bg-green-600 file:text-white file:hover:bg-green-700 file:cursor-pointer"
                       />
-                      {formData.promoPoster && (
-                        <span className="text-sm">
-                          {formData.promoPoster.name}
-                        </span>
-                      )}
+                      
                     </div>
                   </div>
                 )}

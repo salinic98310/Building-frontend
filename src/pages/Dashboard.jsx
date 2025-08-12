@@ -168,12 +168,12 @@ const campaignAnalyticsData = [
                     >
                       <div className="relative">
                         <img
-                          src={fundraiser.photo || heroImg} // Fallback to hero image if no photo is available}
+                          src={fundraiser.photo } // Fallback to hero image if no photo is available}
                           alt={fundraiser.projectTitle}
                           className="w-full h-52 object-cover"
                         />
-                        <span className="absolute bottom-2 left-2 bg-black bg-opacity-60 text-white text-sm px-3 py-1 rounded-full">
-                          {fundraiser.location }
+                        <span className="absolute bottom-2 left-2 bg-black bg-opacity-60 text-white text-sm px-3 py-2 rounded-full">
+                          {fundraiser.state } , {fundraiser.country} , {fundraiser.city}
                         </span>
                       </div>
                       <div className="p-4">

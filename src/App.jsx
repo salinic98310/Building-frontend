@@ -20,7 +20,8 @@ import StartFundraiser from "./pages/StartAFundraiser.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage.jsx";
-import AdminDashboard from "../src/admin/adminDashboard.jsx"; // Admin Dashboard component
+import AdminDashboard from "../src/admin/adminDashboard.jsx"; 
+import PaymentPage from "./pages/PaymentPage.jsx";
 // Context
 import { FundraiserProvider } from "./context/FundraiserContext.jsx";
 
@@ -94,7 +95,7 @@ export default function App() {
 
             {/* Start Fundraiser */}
             <Route path="/start-fundraiser" element={<StartFundraiser />} />
-
+              <Route path="/payment" element={<PaymentPage />} />
             {/* Protected Routes for Regular Users */}
             <Route path="/dashboard" element={<Dashboard />} />
 

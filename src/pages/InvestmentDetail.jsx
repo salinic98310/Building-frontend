@@ -115,9 +115,13 @@ const InvestmentDetail = () => {
             <button className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-2 rounded mb-2">
               Share
             </button>
-            <button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 rounded mb-4">
-              Donate Now
-            </button>
+            <button
+  onClick={() => navigate("/payment", { state: { campaign } })}
+  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 rounded mb-4"
+>
+  Donate Now
+</button>
+
 
             <div>
               <p className="text-sm font-medium mb-2 text-purple-700">
@@ -141,13 +145,7 @@ const InvestmentDetail = () => {
 
             <h2 className="text-2xl font-semibold mb-4">Documents</h2>
             <ul className="text-blue-600">
-              {(campaign.Licences || []).map((license_file_data_or_url, i) => (
-                <li key={i}>
-                  <a href={license_file_data_or_url.url || "#"} target="_blank" rel="noreferrer">
-                    {license_file_data_or_url.name || license_file_data_or_url}
-                  </a>
-                </li>
-              ))}
+              {campaign.license}
             </ul>
             <h2 className="text-2xl font-semibold mb-4">About Company</h2>
             <p className="text-gray-700 whitespace-pre-line mb-8 ">
